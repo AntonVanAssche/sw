@@ -11,8 +11,8 @@ URL:            https://github.com/AntonVanAssche/sw
 Source0:        %{name}-%{_version}.tar.gz
 Source1:        %{name}
 
-BuildRequires:  python3.12-devel
-Requires:       python3.12
+BuildRequires:  python3.13-devel
+Requires:       python3.13
 
 %description
 Manage your wallpapers on Hyprland with sw, an overly complicated yet powerful wallpaper
