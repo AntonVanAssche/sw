@@ -1,0 +1,71 @@
+name: Validate
+
+on: [push]
+
+jobs:
+  pylint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    container:
+      image: registry.fedoraproject.org/fedora:41
+      env:
+        NODE_ENV: development
+      volumes:
+        - ${{ github.workspace }}:/root
+      options: --cpus 1 --user 0
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          dnf install -y \
+            dbus-devel \
+            gcc \
+            glib2 \
+            glib2-devel \
+            python3 \
+            python3-devel \
+            python3-pip \
+            python3-pkgconfig
+          python -m pip install --upgrade pip
+          pip install pylint
+          pip install \
+            click \
+            dbus-python \
+            notify2 \
+            pillow
+
+      - name: Analysing the code with pylint
+        run: |
+          find /root/src/sw -type f -name '*.py' -execdir pylint --rcfile=/root/.pylintrc {} \;
+
+  rpmlint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    container:
+      image: registry.fedoraproject.org/fedora:40
+      env:
+        NODE_ENV: development
+      volumes:
+        - ${{ github.workspace }}:/root
+      options: --cpus 1 --user 0
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          dnf install -y rpmlint
+
+      - name: Run rpmlint
+        run: |
+          rpmlint /root/package.spec
