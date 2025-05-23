@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=74.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sw"
+authors = [
+    { name = "Anton Van Assche", email = "vanasscheanton@gmail.com" },
+]
+maintainers = [
+    { name = "Anton Van Assche", email = "vanasscheanton@gmail.com" },
+]
+description = "An overly complicated tool to set a wallpaper on Hyprland."
+dynamic = ["version"]
+readme = "README.md"
+license = { file = "LICENSE.md" }
+requires-python = ">=3.12"
+classifiers = [
+    "Environment :: Console",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+]
+dependencies = [
+    "click",
+    "dbus-python",
+    "notify2",
+    "pillow"
+]
+
+[project.scripts]
+sw = "sw:cli"
+
+[project.urls]
+Homepage = "https://github.com/AntonVanAssche/sw"
+Issues = "https://github.com/AntonVanAssche/sw/issues"
+
+[tool.setuptools.dynamic]
+version = {attr = "sw.__version__"}

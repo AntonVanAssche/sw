@@ -1,0 +1,18 @@
+[MESSAGES CONTROL]
+
+disable=raw-checker-failed,
+        bad-inline-option,
+        broad-exception-raised,
+        broad-exception-caught,
+        locally-disabled,
+        file-ignored,
+        suppressed-message,
+        useless-suppression,
+        deprecated-pragma,
+        use-symbolic-message-instead,
+        use-implicit-booleaness-not-comparison-to-string,
+        use-implicit-booleaness-not-comparison-to-zero,
+        line-too-long,
+        missing-function-docstring,
+        missing-module-docstring,
+        missing-class-docstring,
