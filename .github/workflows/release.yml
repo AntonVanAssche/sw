@@ -1,0 +1,120 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    needs: lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    container:
+      image: registry.fedoraproject.org/fedora:40
+      env:
+        NODE_ENV: development
+      volumes:
+        - ${{ github.workspace }}:/root
+      options: --cpus 1 --user 0
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          dnf install -y rpmdevtools python3.12-devel python3.12 python3-pip
+          python3 -m pip install --upgrade -r /root/requirements.txt
+
+      - name: Build package
+        run: |
+          python3 -m build /root
+
+      - name: Build rpm
+        run: |
+          rpmdev-setuptree
+          cp -r /root/dist/* /github/home/rpmbuild/SOURCES
+          cp -r rpm_src/* /github/home/rpmbuild/SOURCES
+          spectool --get-files --sourcedir package.spec
+          rpmbuild -bb -v package.spec
+          mv /github/home/rpmbuild/RPMS/*/*.rpm /root
+          rm -rf /github/home/rpmbuild/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pip
+          path: /root/dist/*.tar.gz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rpm
+          path: /root/*.rpm
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    container:
+      image: registry.fedoraproject.org/fedora:40
+      env:
+        NODE_ENV: development
+      volumes:
+        - ${{ github.workspace }}:/root
+      options: --cpus 1 --user 0
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: rpm
+
+      - name: Test rpm
+        run: |
+          dnf install -y *.rpm
+          test -f /usr/local/bin/sw
+          test -d /usr/local/lib/sw/
+
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: pip
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: rpm
+
+      - name: Extract package name
+        run: |
+          PIP_PACKAGE_NAME=$(ls *.tar.gz | head -n 1)
+          RPM_PACKAGE_NAME=$(ls *.rpm | head -n 1)
+          echo "PIP_PACKAGE_NAME=${PIP_PACKAGE_NAME}" >> $GITHUB_ENV
+          echo "RPM_PACKAGE_NAME=${RPM_PACKAGE_NAME}" >> $GITHUB_ENV
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            *.rpm
+            *.tar.gz
+          generate_release_notes: true
+
+      - uses: danielmundi/upload-packagecloud@v1
+        with:
+          PACKAGE-NAME: ${{ env.RPM_PACKAGE_NAME }}
+          PACKAGECLOUD-USERNAME: AntonVanAssche
+          PACKAGECLOUD-REPO: sw
+          PACKAGECLOUD-DISTRIB: fedora/41/
+          PACKAGECLOUD-TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
