@@ -37,7 +37,6 @@ find ./%{name} -type f -exec %{__sed} -i 's|%{_builddir}|/usr/local/lib|g' '{}' 
 
 %install
 %{__mkdir_p} %{buildroot}/usr/local/lib
-%{__mkdir_p} %{buildroot}%{_mandir}/man1
 %{__cp} -r ./%{name} %{buildroot}/usr/local/lib
 %{__mkdir_p} %{buildroot}/usr/local/bin
 %{__install} -D -m 0755 %{SOURCE1} %{buildroot}/usr/local/bin/%{name}
