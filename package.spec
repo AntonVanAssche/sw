@@ -23,6 +23,7 @@ Perfect for users who want fine-grained control over their Hyprland desktop back
 %define _buildshell /usr/bin/bash
 %define __python    /usr/bin/python3.13
 %define python3_version 3.13
+%global __requires_exclude_from ^/usr/local/lib/%{name}/.*\\.so.*$
 
 %prep
 %{__python} -m venv --clear ./%{name}
