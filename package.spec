@@ -21,8 +21,9 @@ and integration with systemd timers to automate wallpaper changes seamlessly.
 Perfect for users who want fine-grained control over their Hyprland desktop backgrounds.
 
 %define _buildshell /usr/bin/bash
-%define __python    /usr/bin/python3.12
-%define python3_version 3.12
+%define __python    /usr/bin/python3.13
+%define python3_version 3.13
+%global __requires_exclude_from ^/usr/local/lib/%{name}/.*\\.so.*$
 
 %prep
 %{__python} -m venv --clear ./%{name}
@@ -37,7 +38,6 @@ find ./%{name} -type f -exec %{__sed} -i 's|%{_builddir}|/usr/local/lib|g' '{}' 
 
 %install
 %{__mkdir_p} %{buildroot}/usr/local/lib
-%{__mkdir_p} %{buildroot}%{_mandir}/man1
 %{__cp} -r ./%{name} %{buildroot}/usr/local/lib
 %{__mkdir_p} %{buildroot}/usr/local/bin
 %{__install} -D -m 0755 %{SOURCE1} %{buildroot}/usr/local/bin/%{name}
