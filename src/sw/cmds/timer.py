@@ -48,6 +48,20 @@ def timer_disable_cmd(ctx):
     log(result, silent=ctx.obj.get("silent", False))
 
 
+@timer_cmd.command("toggle", short_help="Start the timer")
+@click.help_option("--help", "-h")
+@click.pass_context
+def timer_toggle_cmd(ctx):
+    """
+    Toggle the systemd timer for sw.
+    This command will start the timer if it is currently inactive,
+    or stop it if it is currently active.
+    """
+    tm = TimerManager()
+    result = tm.toggle()
+    log(result, silent=ctx.obj.get("silent", False))
+
+
 @timer_cmd.command("status", short_help="Get the timer status")
 @click.help_option("--help", "-h")
 @click.pass_context
