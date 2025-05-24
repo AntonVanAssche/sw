@@ -21,8 +21,8 @@ and integration with systemd timers to automate wallpaper changes seamlessly.
 Perfect for users who want fine-grained control over their Hyprland desktop backgrounds.
 
 %define _buildshell /usr/bin/bash
-%define __python    /usr/bin/python3.12
-%define python3_version 3.12
+%define __python    /usr/bin/python3.13
+%define python3_version 3.13
 
 %prep
 %{__python} -m venv --clear ./%{name}
