@@ -1,0 +1,13 @@
+---
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    assignees:
+      - "AntonVanAssche"
+    reviewers:
+      - "AntonVanAssche"
+    commit-message:
+      prefix: "[pip] "
