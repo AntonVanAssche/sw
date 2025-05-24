@@ -11,8 +11,8 @@ URL:            https://github.com/AntonVanAssche/sw
 Source0:        %{name}-%{_version}.tar.gz
 Source1:        %{name}
 
-BuildRequires:  python3.13-devel
-Requires:       python3.13
+BuildRequires:  python3-devel
+Requires:       python3
 
 %description
 Manage your wallpapers on Hyprland with sw, an overly complicated yet powerful wallpaper
@@ -21,7 +21,7 @@ and integration with systemd timers to automate wallpaper changes seamlessly.
 Perfect for users who want fine-grained control over their Hyprland desktop backgrounds.
 
 %define _buildshell /usr/bin/bash
-%define __python    /usr/bin/python3.13
+%define __python    /usr/bin/python3
 %define python3_version 3.13
 %global __requires_exclude_from ^/usr/local/lib/%{name}/.*\\.so.*$
 
