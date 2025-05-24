@@ -49,9 +49,9 @@ jobs:
         run: |
           rpmdev-setuptree
           cp -r /root/dist/* /github/home/rpmbuild/SOURCES
-          cp -r rpm_src/* /github/home/rpmbuild/SOURCES
-          spectool --get-files --sourcedir package.spec
-          rpmbuild -bb -v package.spec
+          cp -r /root/rpm_src/* /github/home/rpmbuild/SOURCES
+          spectool --get-files --sourcedir /root/package.spec
+          rpmbuild -bb -v /root/package.spec
           mv /github/home/rpmbuild/RPMS/*/*.rpm /root
           rm -rf /github/home/rpmbuild/
 
