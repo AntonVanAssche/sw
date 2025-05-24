@@ -6,6 +6,8 @@ import sys
 import notify2
 from PIL import Image
 
+Image.MAX_IMAGE_PIXELS = None
+
 
 def log(message: str, silent: bool = False):
     if silent:
