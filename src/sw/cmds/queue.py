@@ -22,7 +22,7 @@ def queue_cmd(ctx):
 @queue_cmd.command("add")
 @click.help_option("--help", "-h")
 @click.argument("patterns", nargs=-1, required=True)
-@click.option("--shuffle", "-s", is_flag=True, help="Do not shuffle the queue after adding.")
+@click.option("--shuffle", "-s", is_flag=True, help="Shuffle the queue entries before adding.")
 @click.pass_context
 def add_cmd(ctx, patterns, shuffle):
     """
