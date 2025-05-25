@@ -6,7 +6,8 @@ import click
 
 from sw.core.config import Config, ConfigError
 from sw.core.history import HistoryIndexError, HistoryManager
-from sw.utils.common import err, log
+from sw.utils.common import err, log, warn
+from sw.utils.style import cyan, green, red, yellow
 
 CONFIG = Config()
 
@@ -57,21 +58,21 @@ def favorite_add_cmd(ctx, path):
         favorites = CONFIG.get("favorites", [])
 
         if path in favorites:
-            log("Already in favorites.", silent=silent)
+            warn("Already in favorites.", silent=silent)
             return
 
         favorites.append(path)
         CONFIG.set("favorites", favorites)
-        log(f"Added to favorites: {path}", silent=silent)
+        log(f"Added to {cyan('favorites')}: {green(path)}", silent=silent)
 
     except ValueError as ve:
-        err(ctx, "Invalid history index format or no current wallpaper", ve)
+        err(ctx, red("Invalid history index format or no current wallpaper"), ve)
     except HistoryIndexError as hie:
-        err(ctx, f"History index out of range: {path}", hie)
+        err(ctx, red(f"History index out of range: {path}"), hie)
     except ConfigError as ce:
-        err(ctx, "Failed to update favorites", ce)
+        err(ctx, red("Failed to update favorites"), ce)
     except Exception as e:
-        err(ctx, "Unexpected error while adding to favorites", e)
+        err(ctx, red("Unexpected error while adding to favorites"), e)
 
 
 @favorite_cmd.command("rm")
@@ -99,30 +100,30 @@ def favorite_rm_cmd(ctx, path):
 
             removed = favorites.pop(index)
             CONFIG.set("favorites", favorites)
-            log(f"Removed from favorites: {removed}", silent=silent)
+            log(f"Removed from {cyan('favorites')}: {red(removed)}", silent=silent)
             return
 
         else:
             path = str(Path(path).expanduser().resolve())
 
         if path not in favorites:
-            log("Not in favorites.", silent=silent)
+            log(yellow("Not in favorites."), silent=silent)
             return
 
         favorites.remove(path)
         CONFIG.set("favorites", favorites)
-        log(f"Removed from favorites: {path}", silent=silent)
+        log(f"Removed from {cyan('favorites')}: {red(path)}", silent=silent)
 
     except ValueError as ve:
-        err(ctx, "Invalid history index format or no current wallpaper", ve)
+        err(ctx, red("Invalid history index format or no current wallpaper"), ve)
     except HistoryIndexError as hie:
-        err(ctx, "No current wallpaper found", hie)
+        err(ctx, red("No current wallpaper found"), hie)
     except IndexError as ie:
-        err(ctx, "Invalid favorite index", ie)
+        err(ctx, red("Invalid favorite index"), ie)
     except ConfigError as ce:
-        err(ctx, "Failed to update favorites", ce)
+        err(ctx, red("Failed to update favorites"), ce)
     except Exception as e:
-        err(ctx, "Unexpected error while removing from favorites", e)
+        err(ctx, red("Unexpected error while removing from favorites"), e)
 
 
 @favorite_cmd.command("list")
@@ -136,12 +137,12 @@ def favorite_list_cmd(ctx):
     try:
         favorites = CONFIG.get("favorites", [])
     except ConfigError as ce:
-        err(ctx, "Failed to read favorites", ce)
+        err(ctx, red("Failed to read favorites"), ce)
     except Exception as e:
-        err(ctx, "Unexpected error while listing favorites", e)
+        err(ctx, red("Unexpected error while listing favorites"), e)
 
     if favorites:
         for idx, path in enumerate(favorites, start=1):
-            log(f"{idx}: {path}", silent=silent)
+            log(f"{yellow(str(idx))}: {green(path)}", silent=silent)
     else:
-        log("No favorites found.", silent=silent)
+        warn("No favorites found.", silent=silent)

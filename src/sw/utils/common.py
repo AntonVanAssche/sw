@@ -6,6 +6,8 @@ import sys
 import notify2
 from PIL import Image
 
+from sw.utils.style import bold, red
+
 Image.MAX_IMAGE_PIXELS = None
 
 
@@ -22,9 +24,19 @@ def log(message: str, silent: bool = False):
         n.show()
 
 
+def warn(message: str, silent: bool = False):
+    if sys.stderr.isatty():
+        print(bold(yellow(message)), file=sys.stderr)
+    else:
+        notify2.init("Switch Wallpaper")
+        n = notify2.Notification("Switch Wallpaper (script)", f"Error: {message}")
+        n.set_timeout(3000)
+        n.show()
+
+
 def err(ctx: str, message: str, exc: Exception):
     if sys.stderr.isatty():
-        print(f"Error: {message}: {exc}", file=sys.stdout)
+        print(f"{bold(red('Error:'))} {message}: {exc}", file=sys.stderr)
     else:
         notify2.init("Switch Wallpaper")
         n = notify2.Notification("Switch Wallpaper (script)", f"Error: {message}")

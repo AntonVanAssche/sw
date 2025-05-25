@@ -23,18 +23,29 @@ from sw.cmds.queue import queue_cmd
 from sw.cmds.set import set_cmd
 from sw.cmds.status import status_cmd
 from sw.cmds.timer import timer_cmd
+from sw.utils import style
 
 
 # pylint: disable=no-value-for-parameter
 @click.group()
 @click.option("--silent", "-s", is_flag=True, help="Suppress output when necessary.")
+@click.option(
+    "--color",
+    "-c",
+    type=click.Choice(["auto", "never", "always"], case_sensitive=False),
+    default="auto",
+    help="Control colored output: auto, never, or always.",
+)
 @click.help_option("--help", "-h")
 @click.version_option(__version__, "--version", "-v", help="Show the installed version of sw.")
 @click.pass_context
-def cli(ctx, silent):
+def cli(ctx, silent, color):
     """sw - An overly complicated wallpaper switcher for Hyprland."""
     ctx.ensure_object(dict)
+    ctx.obj["color"] = color
     ctx.obj["silent"] = silent
+
+    style.set_color_mode(color)
 
 
 cli.add_command(config_cmd, name="config")

@@ -5,6 +5,7 @@ import click
 from sw.core.history import HistoryWriteError
 from sw.core.wallpaper import InvalidImageError, SubprocessError, WallpaperError, WallpaperManager
 from sw.utils.common import err, log
+from sw.utils.style import green
 
 
 @click.command("next", short_help="Set the next wallpaper")
@@ -22,7 +23,7 @@ def next_cmd(ctx):
 
     try:
         wallpaper = wm.set_wallpaper()
-        log(f"Wallpaper set: {wallpaper or 'from default dir'}", silent=ctx.obj.get("silent", False))
+        log(f"Wallpaper set: {green(wallpaper)}", silent=ctx.obj.get("silent", False))
     except (WallpaperError, InvalidImageError, SubprocessError, HistoryWriteError) as e:
         err(ctx, "Failed to set next wallpaper", e)
     except Exception as e:

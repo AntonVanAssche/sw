@@ -5,6 +5,7 @@ import click
 from sw.core.history import HistoryManager, HistoryReadError, HistoryWriteError
 from sw.core.wallpaper import InvalidImageError, SubprocessError, WallpaperError, WallpaperManager
 from sw.utils.common import err, log
+from sw.utils.style import green
 
 
 @click.command("prev", short_help="Set the previous wallpaper in the queue")
@@ -38,7 +39,7 @@ def prev_cmd(ctx):
 
     try:
         wallpaper = wm.set_wallpaper(path)
-        log(f"Wallpaper set: {wallpaper or 'from default dir'}", silent=ctx.obj.get("silent", False))
+        log(f"Wallpaper set: {green(wallpaper)}", silent=ctx.obj.get("silent", False))
     except (WallpaperError, InvalidImageError, SubprocessError, HistoryWriteError) as e:
         err(ctx, "Failed to set previous wallpaper", e)
     except Exception as e:

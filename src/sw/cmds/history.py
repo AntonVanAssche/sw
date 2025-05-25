@@ -5,7 +5,8 @@ import time
 import click
 
 from sw.core.history import HistoryManager
-from sw.utils.common import err, log
+from sw.utils.common import err, log, warn
+from sw.utils.style import bold, green, red, yellow
 
 
 # pylint: disable=unused-argument
@@ -20,6 +21,7 @@ def history_cmd(ctx):
     """
 
 
+# pylint: disable=too-many-locals
 @history_cmd.command("list", short_help="List wallpaper history entries")
 @click.help_option("--help", "-h")
 @click.option("-n", "--lines", type=int, default=None, help="Show only the last N entries")
@@ -55,13 +57,18 @@ def history_list_cmd(ctx, lines, unique):
 
     for i, entry in entries:
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(entry.time))
-        log(f"{i+1:>3}: {entry.path} ({timestamp})", silent=ctx.obj.get("silent"))
+        idx_str = yellow(f"{i+1:>3}")
+        path_str = green(entry.path)
+        time_str = yellow(f"({timestamp})")
+        log(f"{idx_str}: {path_str} {time_str}", silent=ctx.obj.get("silent"))
 
 
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-positional-arguments
 # pylint: disable=redefined-builtin
 # pylint: disable=too-many-branches
+# pylint: disable=too-many-locals
+# pylint: disable=too-many-statements
 @history_cmd.command("rm", short_help="Remove entries from wallpaper history")
 @click.help_option("--help", "-h")
 @click.option("-i", "--index", type=int, help="Remove a single entry by index (1-based)")
@@ -107,7 +114,7 @@ def history_rm_cmd(ctx, index, all, duplicates, since, yes):
         except Exception as e:
             err(ctx, f"Failed to remove history entry {index}", e)
 
-        log(f"Removed entry {index}: {entry.path}", silent=ctx.obj.get("silent"))
+        log(f"Removed entry {green(entry.path)}", silent=ctx.obj.get("silent"))
         return
 
     remaining = entries[:]
@@ -129,14 +136,14 @@ def history_rm_cmd(ctx, index, all, duplicates, since, yes):
             hm.remove_all()
         except Exception as e:
             err(ctx, "Failed to remove all history entries", e)
-        log("All history cleared.", silent=ctx.obj.get("silent"))
+        log(green("All history cleared."), silent=ctx.obj.get("silent"))
         return
 
     if len(remaining) == original_count:
-        log("No entries removed.", silent=ctx.obj.get("silent"))
+        warn("No entries removed.", silent=ctx.obj.get("silent"))
         return
 
     if not yes:
         removed = original_count - len(remaining)
-        log(f"{original_count} entries found. {removed} will be removed.", silent=False)
-        click.confirm("Proceed with removal?", abort=True)
+        log(f"{green(original_count)} entries found. {red(removed)} will be removed.", silent=False)
+        click.confirm(bold(yellow("Proceed with removal?")), abort=True)
