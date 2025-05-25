@@ -75,6 +75,11 @@ class Config:
         return self._config_file
 
     @property
+    def favorites(self) -> list[Path]:
+        """Return a list of favorite wallpapers."""
+        return [Path(f).expanduser().resolve() for f in self.get("favorites", [])]
+
+    @property
     def hyprpaper_config_file(self) -> Path:
         """Return the path to the Hyprpaper configuration file."""
         return Path(self.get("hyprpaper_config_file", "~/.config/hypr/hyprpaper.conf")).expanduser().resolve()
