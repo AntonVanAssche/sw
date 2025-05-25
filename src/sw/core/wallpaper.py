@@ -12,7 +12,7 @@ import time
 from pathlib import Path
 
 from sw.core.config import Config
-from sw.core.history import HistoryManager
+from sw.core.history import HistoryIndexError, HistoryManager, HistoryWriteError
 from sw.core.queue import QueueManager
 from sw.utils.common import is_valid_image, replace_lines_in_file
 
@@ -23,10 +23,6 @@ class WallpaperError(Exception):
 
 class InvalidImageError(WallpaperError):
     """Raised when an invalid image file is encountered."""
-
-
-class HistoryFileError(WallpaperError):
-    """Raised when there is an issue with the wallpaper history file."""
 
 
 class SubprocessError(WallpaperError):
@@ -43,7 +39,6 @@ class WallpaperManager:
 
     def __init__(self):
         """Initialize with config, queue, and history managers."""
-
         self.config = Config()
         self.queue = QueueManager()
         self.history = HistoryManager()
@@ -71,25 +66,32 @@ class WallpaperManager:
             InvalidImageError: If the selected file is not a valid image.
             WallpaperError: For other errors such as no valid wallpapers found.
         """
-
-        if path:
-            target = Path(path)
-            if target.is_dir():
-                target = self._get_random_wallpaper(target)
-        else:
-            queue = self.queue.read()
-            if queue:
-                target = Path(queue.pop(0))
-                self.queue.rm([str(target)])
+        try:
+            if path:
+                target = Path(path)
+                if target.is_dir():
+                    target = self._get_random_wallpaper(target)
             else:
-                target = self._get_random_wallpaper(self.config.wallpaper_dir)
+                queue = self.queue.read()
+                if queue:
+                    target = Path(queue.pop(0))
+                    self.queue.rm([str(target)])
+                else:
+                    target = self._get_random_wallpaper(self.config.wallpaper_dir)
+        except Exception as e:
+            raise WallpaperError(f"Failed to select wallpaper: {e}") from e
 
         if not is_valid_image(str(target)):
             raise InvalidImageError(f"Invalid image file: {target}")
 
         self._update_configs(str(target))
         self._restart_hyprpaper()
-        self.history.add(str(target))
+
+        try:
+            self.history.add(str(target))
+        except Exception as e:
+            raise HistoryWriteError(f"Failed to update wallpaper history: {e}") from e
+
         return target
 
     def set_by_history_index(self, index: int) -> Path:
@@ -103,14 +105,14 @@ class WallpaperManager:
             Path: The path to the wallpaper that was set.
 
         Raises:
-            WallpaperError: If the index is invalid.
+            WallpaperError: If the index is invalid or setting wallpaper fails.
         """
-
         try:
             path = self.history.get_by_index(index)
-            return self.set_wallpaper(path)
         except IndexError as e:
-            raise WallpaperError(f"Invalid history index: @{index + 1}") from e
+            raise HistoryIndexError(f"Invalid history index: @{index + 1}") from e
+
+        return self.set_wallpaper(path)
 
     def _get_random_wallpaper(self, directory: Path) -> Path:
         """
@@ -126,7 +128,6 @@ class WallpaperManager:
         Raises:
             WallpaperError: If no suitable wallpaper is found.
         """
-
         directory = directory.expanduser().resolve()
         recent = set(self.history.get_recent_paths())
         excludes = {Path(p).expanduser().resolve() for p in self.config.recency_exclude}
@@ -146,7 +147,7 @@ class WallpaperManager:
             candidates.append(f)
 
         if not candidates:
-            raise WallpaperError("No suitable wallpapers found.")
+            raise WallpaperError(f"No suitable wallpapers found in {directory}")
 
         return random.choice(candidates)
 
@@ -160,7 +161,6 @@ class WallpaperManager:
         Raises:
             WallpaperError: If config files cannot be updated.
         """
-
         try:
             replace_lines_in_file(
                 self.config.hyprpaper_config_file,
@@ -185,7 +185,6 @@ class WallpaperManager:
         Raises:
             SubprocessError: If restarting the wallpaper daemon fails.
         """
-
         try:
             subprocess.run(["pkill", "-x", "hyprpaper"], check=False)
             time.sleep(1)
