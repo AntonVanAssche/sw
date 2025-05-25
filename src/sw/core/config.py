@@ -31,35 +31,40 @@ class Config:
     """Handles the configuration of sw."""
 
     def __init__(self):
-        """Initialize the Config class."""
+        """Initialize the Config class and load configuration data."""
         self._config_file = Path.home() / ".config" / "sw" / "config.json"
 
         if not self._config_file.exists():
-            raise ConfigError(f"Configuration file not found at {self._config_file}")
+            raise ConfigError(f"Configuration file not found at: {self._config_file}")
 
         try:
             with self._config_file.open("r", encoding="utf-8") as f:
                 self._data = json.load(f)
-        except (json.JSONDecodeError, OSError) as e:
-            raise ConfigError(f"Error loading config file: {e}") from e
+        except json.JSONDecodeError as e:
+            raise ConfigError(f"Config file is not valid JSON: {e}") from e
+        except OSError as e:
+            raise ConfigError(f"Could not read config file: {e}") from e
+
+        if not isinstance(self._data, dict):
+            raise ConfigError("Config file must contain a JSON object at top level.")
 
     def get(self, key: str, default=None):
-        """Retrieve a configuration value, with optional default."""
+        """Retrieve a configuration value, with optional default fallback."""
         if key not in self._data and default is None:
-            raise KeyError(f"Missing required config key: '{key}'")
+            raise ConfigError(f"Missing required config key: '{key}'")
         return self._data.get(key, default)
 
     def set(self, key: str, value) -> None:
         """Set and persist a configuration key-value pair."""
         if not self._is_valid_key(key):
-            raise KeyError(f"Invalid configuration key: '{key}'")
+            raise ConfigError(f"Invalid configuration key: '{key}' (must correspond to a property)")
 
         self._data[key] = value
         try:
             with self._config_file.open("w", encoding="utf-8") as f:
                 json.dump(self._data, f, indent=2)
         except OSError as e:
-            raise ConfigError(f"Error writing to config file: {e}") from e
+            raise ConfigError(f"Failed to write to config file: {e}") from e
 
     def get_all(self) -> dict:
         """Return the entire config as a dictionary."""
@@ -77,7 +82,10 @@ class Config:
     @property
     def favorites(self) -> list[Path]:
         """Return a list of favorite wallpapers."""
-        return [Path(f).expanduser().resolve() for f in self.get("favorites", [])]
+        favorites = self.get("favorites", [])
+        if not isinstance(favorites, list):
+            raise ConfigError("'favorites' must be a list")
+        return [Path(f).expanduser().resolve() for f in favorites]
 
     @property
     def hyprpaper_config_file(self) -> Path:
@@ -97,7 +105,11 @@ class Config:
     @property
     def history_limit(self) -> int:
         """Return the history limit."""
-        return int(self.get("history_limit", 500))
+        val = self.get("history_limit", 500)
+        try:
+            return int(val)
+        except (TypeError, ValueError) as e:
+            raise ConfigError(f"Invalid value for 'history_limit' (expected int): {val}") from e
 
     @property
     def queue_file(self) -> Path:
@@ -107,14 +119,24 @@ class Config:
     @property
     def recency_timeout(self) -> int:
         """Return the recency timeout in seconds."""
-        return int(self.get("recency_timeout", 3600))
+        val = self.get("recency_timeout", 3600)
+        try:
+            return int(val)
+        except (TypeError, ValueError) as e:
+            raise ConfigError(f"Invalid value for 'recency_timeout' (expected int): {val}") from e
 
     @property
     def recency_exclude(self) -> list[Path]:
         """Return a list of directories to exclude from recency tracking."""
-        return self.get("recency_exclude", [])
+        excludes = self.get("recency_exclude", [])
+        if not isinstance(excludes, list):
+            raise ConfigError("'recency_exclude' must be a list")
+        return [Path(e).expanduser().resolve() for e in excludes]
 
     @property
     def wallpaper_dir(self) -> Path:
         """Return the path to the default wallpaper directory."""
-        return Path(self.get("wallpaper_dir")).expanduser().resolve()
+        path = self.get("wallpaper_dir")
+        if not path:
+            raise ConfigError("Missing required config key: 'wallpaper_dir'")
+        return Path(path).expanduser().resolve()

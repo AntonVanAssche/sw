@@ -6,8 +6,8 @@ from typing import get_type_hints
 
 import click
 
-from sw.core.config import Config
-from sw.utils.common import log
+from sw.core.config import Config, ConfigError
+from sw.utils.common import err, log
 
 CONFIG = Config()
 
@@ -15,10 +15,8 @@ CONFIG = Config()
 def is_list_property(prop_name: str) -> bool:
     """Check if a config property returns a list."""
     prop = getattr(Config, prop_name, None)
-    return (
-        isinstance(prop, property)
-        and get_type_hints(prop.fget).get("return") == list[Path]
-        or get_type_hints(prop.fget).get("return") == list
+    return isinstance(prop, property) and (
+        get_type_hints(prop.fget).get("return") == list[Path] or get_type_hints(prop.fget).get("return") == list
     )
 
 
@@ -43,13 +41,14 @@ def update_list_key(key: str, values: tuple[str], append: bool, remove: bool):
         new = list(dict.fromkeys(current + list(values)))
         CONFIG.set(key, new)
         return f"Appended to '{key}': {values}"
-    elif remove:
+
+    if remove:
         new = [v for v in current if v not in values]
         CONFIG.set(key, new)
         return f"Removed from '{key}': {values}"
-    else:
-        CONFIG.set(key, list(values))
-        return f"Set '{key}' to: {values}"
+
+    CONFIG.set(key, list(values))
+    return f"Set '{key}' to: {values}"
 
 
 # pylint: disable=unused-argument
@@ -73,11 +72,16 @@ def get_config(ctx, key):
     """
     Get the current value of a configuration key.
     """
-    value = CONFIG.get(key)
-    if value is None:
-        log(f"{key}: not set", silent=ctx.obj.get("silent"))
-    else:
-        log(f"{key}: {value}", silent=ctx.obj.get("silent"))
+    try:
+        value = CONFIG.get(key)
+        if value is None:
+            log(f"{key}: not set", silent=ctx.obj.get("silent"))
+        else:
+            log(f"{key}: {value}", silent=ctx.obj.get("silent"))
+    except (ConfigError, KeyError) as e:
+        err(ctx, f"Error getting key '{key}'", e)
+    except Exception as e:
+        err(ctx, f"Unexpected error while getting key '{key}'", e)
 
 
 @config_cmd.command("set")
@@ -96,17 +100,22 @@ def set_config(ctx, key, values, append, remove):
     silent = ctx.obj.get("silent")
     key = key.strip()
 
-    if is_list_property(key):
-        message = update_list_key(key, values, append, remove)
-        log(message, silent=silent)
-    else:
-        if append or remove:
-            raise click.BadParameter(f"Key '{key}' does not support --append/--remove")
-        if len(values) > 1:
-            raise click.BadParameter(f"Key '{key}' only accepts a single value, but multiple were given.")
-        val = parse_val(values[0])
-        CONFIG.set(key, val)
-        log(f"Set '{key}' to: {val}", silent=silent)
+    try:
+        if is_list_property(key):
+            message = update_list_key(key, values, append, remove)
+            log(message, silent=silent)
+        else:
+            if append or remove:
+                raise click.BadParameter(f"Key '{key}' does not support --append/--remove")
+            if len(values) > 1:
+                raise click.BadParameter(f"Key '{key}' only accepts a single value, but multiple were given.")
+            val = parse_val(values[0])
+            CONFIG.set(key, val)
+            log(f"Set '{key}' to: {val}", silent=silent)
+    except (ConfigError, click.BadParameter, KeyError) as e:
+        err(ctx, f"Failed set key '{key}' to '{val}'", e)
+    except Exception as e:
+        err(ctx, "Unexpected error", e)
 
 
 @config_cmd.command("unset")
@@ -119,8 +128,13 @@ def unset_config(ctx, key):
 
     This removes the specified key from the config file.
     """
-    CONFIG.set(key, None)
-    log(f"{key}: unset", silent=ctx.obj.get("silent"))
+    try:
+        CONFIG.set(key, None)
+        log(f"{key}: unset", silent=ctx.obj.get("silent"))
+    except (ConfigError, KeyError) as e:
+        err(ctx, f"Failed to unset key '{key}'", e)
+    except Exception as e:
+        err(ctx, "Unexpected error", e)
 
 
 @config_cmd.command("show")
@@ -132,5 +146,8 @@ def show_config(ctx):
 
     Displays the entire configuration as a formatted JSON object.
     """
-    config_data = CONFIG.get_all()
-    log(json.dumps(config_data, indent=2), silent=ctx.obj.get("silent"))
+    try:
+        config_data = CONFIG.get_all()
+        log(json.dumps(config_data, indent=2), silent=ctx.obj.get("silent"))
+    except Exception as e:
+        err(ctx, "Failed to show configuration", e)
