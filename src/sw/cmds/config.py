@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import json
+from pathlib import Path
+from typing import get_type_hints
 
 import click
 
@@ -8,6 +10,46 @@ from sw.core.config import Config
 from sw.utils.common import log
 
 CONFIG = Config()
+
+
+def is_list_property(prop_name: str) -> bool:
+    """Check if a config property returns a list."""
+    prop = getattr(Config, prop_name, None)
+    return (
+        isinstance(prop, property)
+        and get_type_hints(prop.fget).get("return") == list[Path]
+        or get_type_hints(prop.fget).get("return") == list
+    )
+
+
+def parse_val(val: str) -> int | float | str:
+    """Try to parse a string as int or float; fallback to stripped string."""
+    try:
+        return int(val)
+    except ValueError:
+        try:
+            return float(val)
+        except ValueError:
+            return val.strip()
+
+
+def update_list_key(key: str, values: tuple[str], append: bool, remove: bool):
+    """Update a list-type config key with append/remove/set logic."""
+    current = CONFIG.get(key, [])
+    if not isinstance(current, list):
+        raise click.BadParameter(f"Key '{key}' is not a list")
+
+    if append:
+        new = list(dict.fromkeys(current + list(values)))
+        CONFIG.set(key, new)
+        return f"Appended to '{key}': {values}"
+    elif remove:
+        new = [v for v in current if v not in values]
+        CONFIG.set(key, new)
+        return f"Removed from '{key}': {values}"
+    else:
+        CONFIG.set(key, list(values))
+        return f"Set '{key}' to: {values}"
 
 
 # pylint: disable=unused-argument
@@ -39,42 +81,32 @@ def get_config(ctx, key):
 
 
 @config_cmd.command("set")
-@click.help_option("--help", "-h")
-@click.argument("key", nargs=1, required=True)
-@click.argument("value", nargs=-1, required=True)
+@click.argument("key", required=True)
+@click.argument("values", nargs=-1, required=True)
+@click.option("--append", is_flag=True, help="Append value(s) to list-type key.")
+@click.option("--remove", is_flag=True, help="Remove value(s) from list-type key.")
 @click.pass_context
-def set_config(ctx, key, value):
+def set_config(ctx, key, values, append, remove):
     """
     Set a configuration key to a new value.
 
     Supports space-separated values for list-type keys (e.g. 'recency_exclude').
     Numeric values will be stored as numbers automatically.
     """
-    list_keys = {"recency_exclude"}
     silent = ctx.obj.get("silent")
     key = key.strip()
 
-    def parse_val(val):
-        try:
-            return int(val)
-        except ValueError:
-            try:
-                return float(val)
-            except ValueError:
-                return val.strip()
-
-    if key in list_keys:
-        formatted_value = [parse_val(v) for v in value]
-    elif len(value) > 1:
-        raise click.BadParameter(f"Key '{key}' only accepts a single value, but multiple were given.")
+    if is_list_property(key):
+        message = update_list_key(key, values, append, remove)
+        log(message, silent=silent)
     else:
-        formatted_value = parse_val(value[0])
-
-    try:
-        CONFIG.set(key, formatted_value)
-        log(f"Set '{key}' to: {formatted_value}", silent=silent)
-    except Exception as e:
-        log(f"Failed to set config: {e}", silent=silent)
+        if append or remove:
+            raise click.BadParameter(f"Key '{key}' does not support --append/--remove")
+        if len(values) > 1:
+            raise click.BadParameter(f"Key '{key}' only accepts a single value, but multiple were given.")
+        val = parse_val(values[0])
+        CONFIG.set(key, val)
+        log(f"Set '{key}' to: {val}", silent=silent)
 
 
 @config_cmd.command("unset")

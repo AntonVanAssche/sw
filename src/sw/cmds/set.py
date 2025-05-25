@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
+import random
 from pathlib import Path
 
 import click
 
+from sw.core.config import Config
 from sw.core.history import HistoryManager
 from sw.core.wallpaper import WallpaperManager
 from sw.utils.common import log
@@ -13,8 +15,9 @@ from sw.utils.common import log
 @click.help_option("--help", "-h")
 @click.argument("path", required=False)
 @click.option("--use-dir", "-d", is_flag=True, help="Use the directory of the current wallpaper.")
+@click.option("--favorite", "-f", is_flag=True, help="Select a wallpaper from favorites.")
 @click.pass_context
-def set_cmd(ctx, path, use_dir):
+def set_cmd(ctx, path, use_dir, favorite):
     """
     Set the current wallpaper from a file, directory, or history index.
 
@@ -26,8 +29,17 @@ def set_cmd(ctx, path, use_dir):
     If PATH is not provided, the next queued wallpaper is used; if none, a random image from the default directory.
     """
     wm = WallpaperManager()
+    config = Config()
 
     try:
+        if favorite:
+            favorites = config.get("favorites", [])
+            if not favorites:
+                log("No favorites found.", silent=ctx.obj["silent"])
+                return
+
+            path = random.choice(favorites)
+
         if path and path.startswith("@"):
             index = int(path[1:]) - 1
             wallpaper = wm.set_by_history_index(index)

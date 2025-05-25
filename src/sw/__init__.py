@@ -15,6 +15,7 @@ import sys
 import click
 
 from sw.cmds.config import config_cmd
+from sw.cmds.favorite import favorite_cmd
 from sw.cmds.history import history_cmd
 from sw.cmds.next import next_cmd
 from sw.cmds.prev import prev_cmd
@@ -37,6 +38,7 @@ def cli(ctx, silent):
 
 
 cli.add_command(config_cmd, name="config")
+cli.add_command(favorite_cmd, name="favorite")
 cli.add_command(status_cmd, name="status")
 cli.add_command(history_cmd, name="history")
 cli.add_command(next_cmd, name="next")
