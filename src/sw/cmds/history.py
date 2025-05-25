@@ -3,6 +3,7 @@
 import time
 
 import click
+from click.exceptions import Abort
 
 from sw.core.history import HistoryManager
 from sw.utils.common import err, log, warn
@@ -147,3 +148,20 @@ def history_rm_cmd(ctx, index, all, duplicates, since, yes):
         removed = original_count - len(remaining)
         log(f"{green(original_count)} entries found. {red(removed)} will be removed.", silent=False)
         click.confirm(bold(yellow("Proceed with removal?")), abort=True)
+
+    remaining_set = set(remaining)
+    removed_entries = []
+    try:
+        for i in reversed(range(original_count)):
+            if entries[i] not in remaining_set:
+                removed_entries.append(entries[i].path)
+                hm.remove_by_index(i)
+    except Exception as e:
+        err(ctx, "Failed to remove some history entries", e)
+        return
+
+    for path in removed_entries:
+        log(f"Removed entry: {red(path)}", silent=ctx.obj.get("silent"))
+
+    removed = len(removed_entries)
+    log(f"Removed {red(removed)} entries from history.", silent=ctx.obj.get("silent"))
