@@ -27,6 +27,10 @@ class QueueFileError(QueueError):
     """Raised when there's an issue reading or writing the queue file."""
 
 
+class QueueEmptyError(QueueError):
+    """Raised when an operation cannot proceed because the queue is empty."""
+
+
 class QueueManager:
     """Manages a queue of wallpapers using glob patterns."""
 
@@ -44,7 +48,7 @@ class QueueManager:
                 self.config.queue_file.parent.mkdir(parents=True, exist_ok=True)
                 self.config.queue_file.write_text("", encoding="utf-8")
         except Exception as e:
-            raise QueueFileError(f"Error creating queue file: {e}") from e
+            raise QueueFileError(f"Failed to initialize queue file: {e}") from e
 
     def read(self) -> list[Path]:
         """
@@ -62,18 +66,18 @@ class QueueManager:
                 if line.strip()
             ]
         except FileNotFoundError as e:
-            raise QueueFileMissingError("Queue file not found.") from e
+            raise QueueFileMissingError("Queue file is missing.") from e
         except Exception as e:
-            raise QueueFileError(f"Error reading queue file: {e}") from e
+            raise QueueFileError(f"Failed to read queue file: {e}") from e
 
     def _write(self, entries: list[Path]) -> None:
         """Write the given list of Paths to the queue file."""
 
         try:
             content = "\n".join(str(entry) for entry in entries)
-            self.config.queue_file.write_text(content + "\n", encoding="utf-8")
+            self.config.queue_file.write_text(content + ("\n" if content else ""), encoding="utf-8")
         except Exception as e:
-            raise QueueFileError(f"Error writing to queue file: {e}") from e
+            raise QueueFileError(f"Failed to write to queue file: {e}") from e
 
     def add(self, patterns: list[str | Path], shuffle: bool = False) -> None:
         """
@@ -89,34 +93,34 @@ class QueueManager:
         """
 
         if not patterns:
-            raise InvalidPatternError("No patterns provided for adding wallpapers.")
+            raise InvalidPatternError("No patterns provided to add.")
 
-        new_entries: list[Path] = []
+        new_entries = set()
 
         for pattern in patterns:
             try:
                 expanded = str(Path(pattern).expanduser())
-                matched_files = glob.glob(expanded)
-
-                if not matched_files:
-                    raise InvalidPatternError(f"No files found for pattern: {pattern}")
-
-                for file in matched_files:
-                    path = Path(file)
-                    if path not in new_entries:
-                        new_entries.append(path)
-
+                matched = glob.glob(expanded)
+                if not matched:
+                    raise InvalidPatternError(f"No files matched pattern: {pattern}")
+                for file in matched:
+                    new_entries.add(Path(file).resolve())
             except Exception as e:
                 raise InvalidPatternError(f"Error processing pattern '{pattern}': {e}") from e
 
         if shuffle:
+            new_entries = list(new_entries)
             random.shuffle(new_entries)
+        else:
+            new_entries = list(new_entries)
 
         try:
-            combined = self.read() + new_entries
+            current = self.read()
+            combined = current + [p for p in new_entries if p not in current]
             self._write(combined)
+            return len(new_entries)
         except Exception as e:
-            raise QueueFileError(f"Error updating the queue file: {e}") from e
+            raise QueueFileError(f"Failed to update queue with new entries: {e}") from e
 
     def rm(self, patterns: list[str | Path]) -> None:
         """
@@ -135,19 +139,35 @@ class QueueManager:
 
         try:
             entries = self.read()
-            filtered = entries
+            before = len(entries)
 
-            for pattern in patterns:
-                filtered = [entry for entry in filtered if not entry.match(str(pattern))]
+            def match_any(entry: Path) -> bool:
+                return any(entry.match(str(p)) for p in patterns)
+
+            filtered = [e for e in entries if not match_any(e)]
+            removed = before - len(filtered)
 
             self._write(filtered)
+
+            return removed
         except Exception as e:
-            raise QueueFileError(f"Error removing wallpapers from the queue: {e}") from e
+            raise QueueFileError(f"Failed to remove entries from queue: {e}") from e
 
     def list(self) -> list[Path]:
         """Return the list of all wallpapers currently in the queue."""
 
-        return self.read()
+        try:
+            entries = self.read()
+            if not entries:
+                raise QueueEmptyError("The queue is empty.")
+
+            return entries
+        except QueueFileMissingError as e:
+            raise e
+        except QueueEmptyError as e:
+            raise e
+        except Exception as e:
+            raise QueueFileError(f"Failed to read queue entries: {e}") from e
 
     def empty(self) -> None:
         """Empty the entire wallpaper queue."""
@@ -159,7 +179,12 @@ class QueueManager:
 
         try:
             entries = self.read()
+            if not entries:
+                raise QueueEmptyError("Cannot shuffle an empty queue.")
+
             random.shuffle(entries)
             self._write(entries)
+        except QueueEmptyError as e:
+            raise e
         except Exception as e:
-            raise QueueFileError(f"Error shuffling the queue: {e}") from e
+            raise QueueFileError(f"Failed to shuffle queue: {e}") from e
