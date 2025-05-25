@@ -2,8 +2,8 @@
 
 import click
 
-from sw.core.queue import QueueManager
-from sw.utils.common import log
+from sw.core.queue import InvalidPatternError, QueueEmptyError, QueueError, QueueManager
+from sw.utils.common import err, log
 
 
 # pylint: disable=unused-argument
@@ -22,7 +22,7 @@ def queue_cmd(ctx):
 @queue_cmd.command("add")
 @click.help_option("--help", "-h")
 @click.argument("patterns", nargs=-1, required=True)
-@click.option("--shuffle", "-s", is_flag=True, help="Do not shuffle the queue after adding.")
+@click.option("--shuffle", "-s", is_flag=True, help="Shuffle the queue entries before adding.")
 @click.pass_context
 def add_cmd(ctx, patterns, shuffle):
     """
@@ -32,8 +32,16 @@ def add_cmd(ctx, patterns, shuffle):
     to the queue. Directories are not allowed unless expanded via glob.
     """
     qm = QueueManager()
-    qm.add(patterns, shuffle=shuffle)
-    log(f"Added the following files to the queue: \n{'\n'.join(patterns)}", silent=ctx.obj["silent"])
+    silent = ctx.obj.get("silent", False)
+    try:
+        count = qm.add(patterns, shuffle=shuffle)
+        log(f"Added {count} file(s) to the queue.", silent=silent)
+    except InvalidPatternError as e:
+        err(ctx, "Invalid pattern provided", e)
+    except QueueError as e:
+        err(ctx, "Failed to add entries", e)
+    except Exception as e:
+        err(ctx, "Unexpected error while adding entries", e)
 
 
 @queue_cmd.command("rm")
@@ -48,25 +56,42 @@ def rm_cmd(ctx, patterns):
     will be removed from the queue.
     """
     qm = QueueManager()
-    qm.rm(patterns)
-    log(f"Removed the following files from the queue: \n{'\n'.join(patterns)}", silent=ctx.obj["silent"])
+    silent = ctx.obj.get("silent", False)
+    try:
+        count = qm.rm(patterns)
+        if count == 0:
+            log("No matching entries found to remove.", silent=silent)
+        else:
+            log(f"Removed {count} file(s) from the queue.", silent=silent)
+    except InvalidPatternError as e:
+        err(ctx, "Invalid pattern provided", e)
+    except QueueError as e:
+        err(ctx, "Failed to remove entries", e)
+    except Exception as e:
+        err(ctx, "Unexpected error while removing entries", e)
 
 
 @queue_cmd.command("list")
 @click.help_option("--help", "-h")
-def list_cmd():
+@click.pass_context
+def list_cmd(ctx):
     """
     List all wallpapers currently in the queue.
 
     If the queue is empty, an informative message will be printed.
     """
     qm = QueueManager()
-    entries = qm.list()
-    if not entries:
-        log("Queue is empty.", silent=False)
-    else:
+    silent = ctx.obj.get("silent", False)
+    try:
+        entries = qm.list()
         for entry in entries:
             log(entry, silent=False)
+    except QueueEmptyError:
+        log("No wallpapers in the queue.", silent=silent)
+    except QueueError as e:
+        err(ctx, "Failed to list queue entries", e)
+    except Exception as e:
+        err(ctx, "Unexpected error while listing queue", e)
 
 
 @queue_cmd.command("empty")
@@ -79,8 +104,14 @@ def empty_cmd(ctx):
     This cannot be undone.
     """
     qm = QueueManager()
-    qm.empty()
-    log("Queue emptied.", silent=ctx.obj["silent"])
+    silent = ctx.obj.get("silent", False)
+    try:
+        qm.empty()
+        log("Queue emptied.", silent=silent)
+    except QueueError as e:
+        err(ctx, "Failed to empty queue", e)
+    except Exception as e:
+        err(ctx, "Unexpected error while emptying queue", e)
 
 
 @queue_cmd.command("shuffle")
@@ -93,5 +124,13 @@ def shuffle_cmd(ctx):
     This does not add or remove wallpapers—only changes their order.
     """
     qm = QueueManager()
-    qm.shuffle()
-    log("Queue shuffled.", silent=ctx.obj["silent"])
+    silent = ctx.obj.get("silent", False)
+    try:
+        qm.shuffle()
+        log("Queue shuffled.", silent=silent)
+    except QueueEmptyError:
+        log("Queue is empty, nothing to shuffle.", silent=silent)
+    except QueueError as e:
+        err(ctx, "Failed to shuffle queue", e)
+    except Exception as e:
+        err(ctx, "Unexpected error while shuffling queue", e)

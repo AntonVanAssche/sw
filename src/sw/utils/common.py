@@ -22,6 +22,18 @@ def log(message: str, silent: bool = False):
         n.show()
 
 
+def err(ctx: str, message: str, exc: Exception):
+    if sys.stderr.isatty():
+        print(f"Error: {message}: {exc}", file=sys.stdout)
+    else:
+        notify2.init("Switch Wallpaper")
+        n = notify2.Notification("Switch Wallpaper (script)", f"Error: {message}")
+        n.set_timeout(3000)
+        n.show()
+
+    ctx.exit(1)
+
+
 def replace_lines_in_file(filepath: str, patterns: dict[str, str]):
     with open(filepath, "r", encoding="utf-8") as file:
         lines = file.readlines()

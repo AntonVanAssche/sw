@@ -5,7 +5,7 @@ import time
 import click
 
 from sw.core.history import HistoryManager
-from sw.utils.common import log
+from sw.utils.common import err, log
 
 
 # pylint: disable=unused-argument
@@ -33,7 +33,10 @@ def history_list_cmd(ctx, lines, unique):
     or filter the list.
     """
     hm = HistoryManager()
-    all_entries = hm.read()
+    try:
+        all_entries = hm.read()
+    except Exception as e:
+        err(ctx, "Failed to read history", e)
 
     if lines is not None:
         start_index = max(0, len(all_entries) - lines)
@@ -79,7 +82,11 @@ def history_rm_cmd(ctx, index, all, duplicates, since, yes):
     Dates must be in the format: YYYY-MM-DD or YYYY-MM-DD HH:MM
     """
     hm = HistoryManager()
-    entries = hm.read()
+    try:
+        entries = hm.read()
+    except Exception as e:
+        err(ctx, "Failed to read history", e)
+
     original_count = len(entries)
 
     if not entries:
@@ -95,7 +102,11 @@ def history_rm_cmd(ctx, index, all, duplicates, since, yes):
         if not yes:
             click.confirm(f"Remove entry {index}: {entry.path}?", abort=True)
 
-        hm.remove_by_index(index - 1)
+        try:
+            hm.remove_by_index(index - 1)
+        except Exception as e:
+            err(ctx, f"Failed to remove history entry {index}", e)
+
         log(f"Removed entry {index}: {entry.path}", silent=ctx.obj.get("silent"))
         return
 
@@ -114,7 +125,10 @@ def history_rm_cmd(ctx, index, all, duplicates, since, yes):
     if all and not since and not duplicates:
         if not yes:
             click.confirm("Remove all history entries?", abort=True)
-        hm.remove_all()
+        try:
+            hm.remove_all()
+        except Exception as e:
+            err(ctx, "Failed to remove all history entries", e)
         log("All history cleared.", silent=ctx.obj.get("silent"))
         return
 
@@ -126,11 +140,3 @@ def history_rm_cmd(ctx, index, all, duplicates, since, yes):
         removed = original_count - len(remaining)
         log(f"{original_count} entries found. {removed} will be removed.", silent=False)
         click.confirm("Proceed with removal?", abort=True)
-
-    if not remaining:
-        hm.remove_all()
-        log("History cleared.", silent=ctx.obj.get("silent"))
-    else:
-        hm.write(remaining)
-        removed = original_count - len(remaining)
-        log(f"History cleaned: {removed} entries removed.", silent=ctx.obj.get("silent"))

@@ -2,8 +2,8 @@
 
 import click
 
-from sw.core.timer import TimerManager
-from sw.utils.common import log
+from sw.core.timer import TimerError, TimerManager
+from sw.utils.common import err, log
 
 
 # pylint: disable=unused-argument
@@ -23,61 +23,67 @@ def timer_cmd(ctx):
 @click.help_option("--help", "-h")
 @click.pass_context
 def timer_enable_cmd(ctx):
-    """
-    Enable the systemd timer for sw.
-
-    This starts and enables the timer unit so that wallpapers change
-    at regular intervals based on your systemd configuration.
-    """
-    tm = TimerManager()
-    result = tm.enable()
-    log(result, silent=ctx.obj.get("silent", False))
+    """Enable the systemd timer for sw."""
+    silent = ctx.obj.get("silent", False)
+    try:
+        tm = TimerManager()
+        result = tm.enable()
+        log(result, silent=silent)
+    except TimerError as e:
+        err(ctx, "Failed to enable timer", e)
+    except Exception as e:
+        err(ctx, "Unexpected error while enabling timer", e)
 
 
 @timer_cmd.command("disable", short_help="Disable the timer")
 @click.help_option("--help", "-h")
 @click.pass_context
 def timer_disable_cmd(ctx):
-    """
-    Disable the systemd timer for sw.
+    """Disable the systemd timer for sw."""
+    silent = ctx.obj.get("silent", False)
+    try:
+        tm = TimerManager()
+        result = tm.disable()
+        log(result, silent=silent)
+    except TimerError as e:
+        err(ctx, "Failed to disable timer", e)
+    except Exception as e:
+        err(ctx, "Unexpected error while disabling timer", e)
 
-    This stops and disables the timer, preventing automatic wallpaper changes.
-    """
-    tm = TimerManager()
-    result = tm.disable()
-    log(result, silent=ctx.obj.get("silent", False))
 
-
-@timer_cmd.command("toggle", short_help="Start the timer")
+@timer_cmd.command("toggle", short_help="Toggle the timer")
 @click.help_option("--help", "-h")
 @click.pass_context
 def timer_toggle_cmd(ctx):
-    """
-    Toggle the systemd timer for sw.
-    This command will start the timer if it is currently inactive,
-    or stop it if it is currently active.
-    """
-    tm = TimerManager()
-    result = tm.toggle()
-    log(result, silent=ctx.obj.get("silent", False))
+    """Toggle the systemd timer for sw."""
+    silent = ctx.obj.get("silent", False)
+    try:
+        tm = TimerManager()
+        result = tm.toggle()
+        log(result, silent=silent)
+    except TimerError as e:
+        err(ctx, "Failed to toggle timer", e)
+    except Exception as e:
+        err(ctx, "Unexpected error while toggling timer", e)
 
 
 @timer_cmd.command("status", short_help="Get the timer status")
 @click.help_option("--help", "-h")
 @click.pass_context
 def timer_status_cmd(ctx):
-    """
-    Show the current status of the sw systemd timer.
-
-    Displays whether the timer is currently active, whether it's enabled,
-    and how much time is left until the next activation.
-    """
+    """Show the current status of the sw systemd timer."""
     silent = ctx.obj.get("silent", False)
-    tm = TimerManager()
+    try:
+        tm = TimerManager()
 
-    result_msgs = []
-    result_msgs.append(f"Active: {tm.is_active()}")
-    result_msgs.append(f"Enabled: {tm.is_enabled()}")
-    result_msgs.append(f"Time left: {tm.time_left()}")
+        result_msgs = [
+            f"Active: {tm.is_active()}",
+            f"Enabled: {tm.is_enabled()}",
+            f"Time left: {tm.time_left()}",
+        ]
 
-    log("\n".join(result_msgs), silent=silent)
+        log("\n".join(result_msgs), silent=silent)
+    except TimerError as e:
+        err(ctx, "Failed to get timer status", e)
+    except Exception as e:
+        err(ctx, "Unexpected error while checking timer status", e)

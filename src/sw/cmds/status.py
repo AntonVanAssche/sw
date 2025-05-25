@@ -5,9 +5,9 @@ from pathlib import Path
 
 import click
 
-from sw.core.history import HistoryManager
-from sw.core.timer import TimerManager
-from sw.utils.common import log
+from sw.core.history import HistoryManager, HistoryReadError
+from sw.core.timer import TimerError, TimerManager
+from sw.utils.common import err, log
 
 
 @click.command("status", short_help="Show current wallpaper status")
@@ -28,8 +28,19 @@ def status_cmd(ctx, name, directory, hide_path, hide_timer):
     hm = HistoryManager()
     tm = TimerManager()
 
-    wallpaper_info = hm.get_by_index(-1)
-    timer_info = tm.time_left() if not hide_timer else None
+    try:
+        wallpaper_info = hm.get_by_index(-1)
+    except HistoryReadError as e:
+        err(ctx, "Failed to read current wallpaper from history", e)
+    except Exception as e:
+        err(ctx, "Unexpected error while getting current wallpaper", e)
+
+    try:
+        timer_info = tm.time_left() if not hide_timer else None
+    except TimerError as e:
+        err(ctx, "Failed to get timer info", e)
+    except Exception as e:
+        err(ctx, "Unexpected error while getting timer info", e)
 
     def prettify(path: str) -> str:
         name = re.sub(r"^.*[\\/]", "", path)
