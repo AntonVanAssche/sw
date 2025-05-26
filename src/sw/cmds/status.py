@@ -32,16 +32,16 @@ def status_cmd(ctx, name, directory, hide_path, hide_timer):
     try:
         wallpaper_info = hm.get_by_index(-1)
     except HistoryReadError as e:
-        err(ctx, "Failed to read current wallpaper from history", e)
+        err("Failed to read current wallpaper from history", e, ctx)
     except Exception as e:
-        err(ctx, "Unexpected error while getting current wallpaper", e)
+        err("Unexpected error while getting current wallpaper", e, ctx)
 
     try:
         timer_info = tm.time_left() if not hide_timer else None
     except TimerError as e:
-        err(ctx, "Failed to get timer info", e)
+        err("Failed to get timer info", e, ctx)
     except Exception as e:
-        err(ctx, "Unexpected error while getting timer info", e)
+        err("Unexpected error while getting timer info", e, ctx)
 
     def prettify(path: str) -> str:
         name = re.sub(r"^.*[\\/]", "", path)
@@ -53,15 +53,15 @@ def status_cmd(ctx, name, directory, hide_path, hide_timer):
     parts = []
 
     if name:
-        parts.append(f"'Name: {green(prettify(wallpaper_info))}")
+        parts.append(f"Name: {green(prettify(wallpaper_info))}")
 
     if not hide_path:
         parts.append(f"Path: {green(wallpaper_info)}")
 
     if directory:
-        parts.append(f"'Directory:' {green(str(Path(wallpaper_info).parent))}")
+        parts.append(f"Directory: {green(str(Path(wallpaper_info).parent))}")
 
     if not hide_timer and timer_info:
         parts.append(f"Timer: {format_by_value(tm.time_left(), ("Timer is not active", "Timer expired recently"))}")
 
-    log("\n".join(parts), silent=ctx.obj.get("silent"))
+    log("\n".join(parts), ctx=ctx)

@@ -23,8 +23,8 @@ def next_cmd(ctx):
 
     try:
         wallpaper = wm.set_wallpaper()
-        log(f"Wallpaper set: {green(wallpaper)}", silent=ctx.obj.get("silent", False))
+        log(f"Wallpaper set: {green(wallpaper)}", ctx)
     except (WallpaperError, InvalidImageError, SubprocessError, HistoryWriteError) as e:
-        err(ctx, "Failed to set next wallpaper", e)
+        err("Failed to set next wallpaper", e, ctx)
     except Exception as e:
-        err(ctx, "Unexpected error while setting next wallpaper", e)
+        err("Unexpected error while setting next wallpaper", e, ctx)

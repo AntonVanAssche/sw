@@ -74,17 +74,17 @@ def get_config(ctx, key):
     try:
         value = CONFIG.get(key)
         if value is None:
-            log(f"{cyan(key)}: {yellow('not set')}", silent=ctx.obj.get("silent"))
+            log(f"{cyan(key)}: {yellow('not set')}", ctx)
         else:
             if isinstance(value, list):
                 colored_list = ", ".join(green(str(v)) for v in value)
-                log(f"{cyan(key)}: [{colored_list}]", silent=ctx.obj.get("silent"))
+                log(f"{cyan(key)}: [{colored_list}]", ctx)
             else:
-                log(f"{cyan(key)}: {green(value)}", silent=ctx.obj.get("silent"))
+                log(f"{cyan(key)}: {green(value)}", ctx)
     except (ConfigError, KeyError) as e:
-        err(ctx, f"Error getting key '{key}'", e)
+        err(f"Error getting key '{key}'", e, ctx)
     except Exception as e:
-        err(ctx, f"Unexpected error while getting key '{key}'", e)
+        err(f"Unexpected error while getting key '{key}'", e, ctx)
 
 
 @config_cmd.command("set")
@@ -100,7 +100,6 @@ def set_config(ctx, key, values, append, remove):
     Supports space-separated values for list-type keys (e.g. 'recency_exclude').
     Numeric values will be stored as numbers automatically.
     """
-    silent = ctx.obj.get("silent")
     key = key.strip()
 
     try:
@@ -114,7 +113,7 @@ def set_config(ctx, key, values, append, remove):
             else:
                 msg = f"Set '{cyan(key)}' to: {', '.join(green(v) for v in vals)}"
 
-            log(msg, silent=silent)
+            log(msg, ctx)
         else:
             if append or remove:
                 raise click.BadParameter(f"Key '{key}' does not support --append/--remove")
@@ -124,11 +123,11 @@ def set_config(ctx, key, values, append, remove):
 
             val = parse_val(values[0])
             CONFIG.set(key, val)
-            log(f"Set '{cyan(key)}' to: {green(val)}", silent=silent)
+            log(f"Set '{cyan(key)}' to: {green(val)}", ctx)
     except (ConfigError, click.BadParameter, KeyError) as e:
-        err(ctx, f"Failed set key '{key}'", e)
+        err(f"Failed set key '{key}'", e, ctx)
     except Exception as e:
-        err(ctx, "Unexpected error", e)
+        err("Unexpected error", e, ctx)
 
 
 @config_cmd.command("unset")
@@ -143,11 +142,11 @@ def unset_config(ctx, key):
     """
     try:
         CONFIG.set(key, None)
-        log(f"{cyan(key)}: {yellow('unset')}", silent=ctx.obj.get("silent"))
+        log(f"{cyan(key)}: {yellow('unset')}", ctx)
     except (ConfigError, KeyError) as e:
-        err(ctx, f"Failed to unset key '{key}'", e)
+        err(f"Failed to unset key '{key}'", e, ctx)
     except Exception as e:
-        err(ctx, "Unexpected error", e)
+        err("Unexpected error", e, ctx)
 
 
 @config_cmd.command("show")
@@ -161,6 +160,6 @@ def show_config(ctx):
     """
     try:
         config_data = CONFIG.get_all()
-        log(format_json(config_data), silent=ctx.obj.get("silent"))
+        log(format_json(config_data), ctx)
     except Exception as e:
-        err(ctx, "Failed to show configuration", e)
+        err("Failed to show configuration", e, ctx)

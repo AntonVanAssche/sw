@@ -36,7 +36,7 @@ def set_cmd(ctx, path, use_dir, favorite):
         if favorite:
             favorites = config.get("favorites", [])
             if not favorites:
-                warn("No favorites found.", silent=ctx.obj.get("silent", False))
+                warn("No favorites found.", ctx)
                 return
             path = random.choice(favorites)
 
@@ -49,20 +49,20 @@ def set_cmd(ctx, path, use_dir, favorite):
         if wallpaper is None and not path and use_dir:
             current_path = HistoryManager().get_by_index(-1)
             if not current_path:
-                err(ctx, "Current wallpaper is unknown", ValueError("Missing history"))
+                err("Current wallpaper is unknown", ValueError("Missing history"), ctx)
             directory = Path(current_path).parent
             wallpaper = wm.set_wallpaper(str(directory))
 
         if wallpaper is None:
             wallpaper = wm.set_wallpaper(path)
 
-        log(f"Wallpaper set: {green(wallpaper)}", silent=ctx.obj.get("silent", False))
+        log(f"Wallpaper set: {green(wallpaper)}", ctx)
 
     except ValueError as ve:
-        err(ctx, "Invalid history index format", ve)
+        err("Invalid history index format", ve, ctx)
     except HistoryIndexError as hi:
-        err(ctx, f"History index out of range: {path}", hi)
+        err(f"History index out of range: {path}", hi, ctx)
     except (WallpaperError, InvalidImageError, SubprocessError, HistoryWriteError) as e:
-        err(ctx, "Failed to set wallpaper", e)
+        err("Failed to set wallpaper", e, ctx)
     except Exception as e:
-        err(ctx, "Unexpected error", e)
+        err("Unexpected error", e, ctx)
