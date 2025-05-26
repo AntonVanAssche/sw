@@ -3,7 +3,6 @@
 import time
 
 import click
-from click.exceptions import Abort
 
 from sw.core.history import HistoryManager
 from sw.utils.common import err, log, warn
