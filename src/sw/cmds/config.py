@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import json
 from pathlib import Path
 from typing import get_type_hints
 
@@ -8,6 +7,7 @@ import click
 
 from sw.core.config import Config, ConfigError
 from sw.utils.common import err, log
+from sw.utils.style import cyan, format_json, green, red, yellow
 
 CONFIG = Config()
 
@@ -32,7 +32,6 @@ def parse_val(val: str) -> int | float | str:
 
 
 def update_list_key(key: str, values: tuple[str], append: bool, remove: bool):
-    """Update a list-type config key with append/remove/set logic."""
     current = CONFIG.get(key, [])
     if not isinstance(current, list):
         raise click.BadParameter(f"Key '{key}' is not a list")
@@ -40,15 +39,15 @@ def update_list_key(key: str, values: tuple[str], append: bool, remove: bool):
     if append:
         new = list(dict.fromkeys(current + list(values)))
         CONFIG.set(key, new)
-        return f"Appended to '{key}': {values}"
+        return "append", key, values
 
     if remove:
         new = [v for v in current if v not in values]
         CONFIG.set(key, new)
-        return f"Removed from '{key}': {values}"
+        return "remove", key, values
 
     CONFIG.set(key, list(values))
-    return f"Set '{key}' to: {values}"
+    return "set", key, values
 
 
 # pylint: disable=unused-argument
@@ -75,9 +74,13 @@ def get_config(ctx, key):
     try:
         value = CONFIG.get(key)
         if value is None:
-            log(f"{key}: not set", silent=ctx.obj.get("silent"))
+            log(f"{cyan(key)}: {yellow('not set')}", silent=ctx.obj.get("silent"))
         else:
-            log(f"{key}: {value}", silent=ctx.obj.get("silent"))
+            if isinstance(value, list):
+                colored_list = ", ".join(green(str(v)) for v in value)
+                log(f"{cyan(key)}: [{colored_list}]", silent=ctx.obj.get("silent"))
+            else:
+                log(f"{cyan(key)}: {green(value)}", silent=ctx.obj.get("silent"))
     except (ConfigError, KeyError) as e:
         err(ctx, f"Error getting key '{key}'", e)
     except Exception as e:
@@ -102,18 +105,28 @@ def set_config(ctx, key, values, append, remove):
 
     try:
         if is_list_property(key):
-            message = update_list_key(key, values, append, remove)
-            log(message, silent=silent)
+            action, key, vals = update_list_key(key, values, append, remove)
+
+            if action == "append":
+                msg = f"Appended to '{cyan(key)}': {', '.join(green(v) for v in vals)}"
+            elif action == "remove":
+                msg = f"Removed from '{cyan(key)}': {', '.join(red(v) for v in vals)}"
+            else:
+                msg = f"Set '{cyan(key)}' to: {', '.join(green(v) for v in vals)}"
+
+            log(msg, silent=silent)
         else:
             if append or remove:
                 raise click.BadParameter(f"Key '{key}' does not support --append/--remove")
+
             if len(values) > 1:
                 raise click.BadParameter(f"Key '{key}' only accepts a single value, but multiple were given.")
+
             val = parse_val(values[0])
             CONFIG.set(key, val)
-            log(f"Set '{key}' to: {val}", silent=silent)
+            log(f"Set '{cyan(key)}' to: {green(val)}", silent=silent)
     except (ConfigError, click.BadParameter, KeyError) as e:
-        err(ctx, f"Failed set key '{key}' to '{val}'", e)
+        err(ctx, f"Failed set key '{key}'", e)
     except Exception as e:
         err(ctx, "Unexpected error", e)
 
@@ -130,7 +143,7 @@ def unset_config(ctx, key):
     """
     try:
         CONFIG.set(key, None)
-        log(f"{key}: unset", silent=ctx.obj.get("silent"))
+        log(f"{cyan(key)}: {yellow('unset')}", silent=ctx.obj.get("silent"))
     except (ConfigError, KeyError) as e:
         err(ctx, f"Failed to unset key '{key}'", e)
     except Exception as e:
@@ -148,6 +161,6 @@ def show_config(ctx):
     """
     try:
         config_data = CONFIG.get_all()
-        log(json.dumps(config_data, indent=2), silent=ctx.obj.get("silent"))
+        log(format_json(config_data), silent=ctx.obj.get("silent"))
     except Exception as e:
         err(ctx, "Failed to show configuration", e)

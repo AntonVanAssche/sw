@@ -8,7 +8,8 @@ import click
 from sw.core.config import Config
 from sw.core.history import HistoryIndexError, HistoryManager, HistoryWriteError
 from sw.core.wallpaper import InvalidImageError, SubprocessError, WallpaperError, WallpaperManager
-from sw.utils.common import err, log
+from sw.utils.common import err, log, warn
+from sw.utils.style import green
 
 
 @click.command("set", short_help="Set a wallpaper from file or dir")
@@ -35,7 +36,7 @@ def set_cmd(ctx, path, use_dir, favorite):
         if favorite:
             favorites = config.get("favorites", [])
             if not favorites:
-                log("No favorites found.", silent=ctx.obj.get("silent", False))
+                warn("No favorites found.", silent=ctx.obj.get("silent", False))
                 return
             path = random.choice(favorites)
 
@@ -55,7 +56,7 @@ def set_cmd(ctx, path, use_dir, favorite):
         if wallpaper is None:
             wallpaper = wm.set_wallpaper(path)
 
-        log(f"Wallpaper set: {wallpaper or 'from default dir'}", silent=ctx.obj.get("silent", False))
+        log(f"Wallpaper set: {green(wallpaper)}", silent=ctx.obj.get("silent", False))
 
     except ValueError as ve:
         err(ctx, "Invalid history index format", ve)

@@ -3,7 +3,8 @@
 import click
 
 from sw.core.queue import InvalidPatternError, QueueEmptyError, QueueError, QueueManager
-from sw.utils.common import err, log
+from sw.utils.common import err, log, warn
+from sw.utils.style import green, red, yellow
 
 
 # pylint: disable=unused-argument
@@ -35,7 +36,7 @@ def add_cmd(ctx, patterns, shuffle):
     silent = ctx.obj.get("silent", False)
     try:
         count = qm.add(patterns, shuffle=shuffle)
-        log(f"Added {count} file(s) to the queue.", silent=silent)
+        log(f"Added {green(count)} file(s) to the queue.", silent=silent)
     except InvalidPatternError as e:
         err(ctx, "Invalid pattern provided", e)
     except QueueError as e:
@@ -60,9 +61,9 @@ def rm_cmd(ctx, patterns):
     try:
         count = qm.rm(patterns)
         if count == 0:
-            log("No matching entries found to remove.", silent=silent)
+            warn("No matching entries found to remove.", silent=silent)
         else:
-            log(f"Removed {count} file(s) from the queue.", silent=silent)
+            log(f"Removed {red(count)} file(s) from the queue.", silent=silent)
     except InvalidPatternError as e:
         err(ctx, "Invalid pattern provided", e)
     except QueueError as e:
@@ -84,10 +85,10 @@ def list_cmd(ctx):
     silent = ctx.obj.get("silent", False)
     try:
         entries = qm.list()
-        for entry in entries:
-            log(entry, silent=False)
+        for entry in enumerate(entries, start=1):
+            log(f"{yellow(entry[0])}: {green(entry[1])}", silent=silent)
     except QueueEmptyError:
-        log("No wallpapers in the queue.", silent=silent)
+        warn("No wallpapers in the queue.", silent=silent)
     except QueueError as e:
         err(ctx, "Failed to list queue entries", e)
     except Exception as e:
@@ -129,7 +130,7 @@ def shuffle_cmd(ctx):
         qm.shuffle()
         log("Queue shuffled.", silent=silent)
     except QueueEmptyError:
-        log("Queue is empty, nothing to shuffle.", silent=silent)
+        warn("Queue is empty, nothing to shuffle.", silent=silent)
     except QueueError as e:
         err(ctx, "Failed to shuffle queue", e)
     except Exception as e:

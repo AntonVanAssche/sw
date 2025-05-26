@@ -4,6 +4,7 @@ import click
 
 from sw.core.timer import TimerError, TimerManager
 from sw.utils.common import err, log
+from sw.utils.style import format_boolean, format_by_value, green
 
 
 # pylint: disable=unused-argument
@@ -28,7 +29,7 @@ def timer_enable_cmd(ctx):
     try:
         tm = TimerManager()
         result = tm.enable()
-        log(result, silent=silent)
+        log(green(result), silent=silent)
     except TimerError as e:
         err(ctx, "Failed to enable timer", e)
     except Exception as e:
@@ -44,7 +45,7 @@ def timer_disable_cmd(ctx):
     try:
         tm = TimerManager()
         result = tm.disable()
-        log(result, silent=silent)
+        log(green(result), silent=silent)
     except TimerError as e:
         err(ctx, "Failed to disable timer", e)
     except Exception as e:
@@ -60,7 +61,7 @@ def timer_toggle_cmd(ctx):
     try:
         tm = TimerManager()
         result = tm.toggle()
-        log(result, silent=silent)
+        log(green(result), silent=silent)
     except TimerError as e:
         err(ctx, "Failed to toggle timer", e)
     except Exception as e:
@@ -76,10 +77,14 @@ def timer_status_cmd(ctx):
     try:
         tm = TimerManager()
 
+        active = tm.is_active()
+        enabled = tm.is_enabled()
+        time_left_str = tm.time_left()
+
         result_msgs = [
-            f"Active: {tm.is_active()}",
-            f"Enabled: {tm.is_enabled()}",
-            f"Time left: {tm.time_left()}",
+            f"Active: {format_boolean(active)}",
+            f"Enabled: {format_boolean(enabled)}",
+            f"Time left: {format_by_value(time_left_str, ("Timer is not active", "Timer expired recently"))}",
         ]
 
         log("\n".join(result_msgs), silent=silent)
