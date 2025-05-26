@@ -53,13 +53,13 @@ def status_cmd(ctx, name, directory, hide_path, hide_timer):
     parts = []
 
     if name:
-        parts.append(f"'Name: {green(prettify(wallpaper_info))}")
+        parts.append(f"Name: {green(prettify(wallpaper_info))}")
 
     if not hide_path:
         parts.append(f"Path: {green(wallpaper_info)}")
 
     if directory:
-        parts.append(f"'Directory:' {green(str(Path(wallpaper_info).parent))}")
+        parts.append(f"Directory: {green(str(Path(wallpaper_info).parent))}")
 
     if not hide_timer and timer_info:
         parts.append(f"Timer: {format_by_value(tm.time_left(), ("Timer is not active", "Timer expired recently"))}")
