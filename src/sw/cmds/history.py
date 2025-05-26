@@ -152,6 +152,9 @@ def history_rm_cmd(ctx, index, all, duplicates, since, yes):
     removed_entries = []
     try:
         for i in reversed(range(original_count)):
+            if i == original_count - 1:
+                continue  # Never delete the last entry
+
             if entries[i] not in remaining_set:
                 removed_entries.append(entries[i].path)
                 hm.remove_by_index(i)
