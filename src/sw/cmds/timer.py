@@ -29,7 +29,7 @@ def timer_enable_cmd(ctx):
     try:
         tm = TimerManager()
         result = tm.enable()
-        log(green(result), silent=silent)
+        log(green(result), ctx)
     except TimerError as e:
         err(ctx, "Failed to enable timer", e)
     except Exception as e:
@@ -45,7 +45,7 @@ def timer_disable_cmd(ctx):
     try:
         tm = TimerManager()
         result = tm.disable()
-        log(green(result), silent=silent)
+        log(green(result), ctx)
     except TimerError as e:
         err(ctx, "Failed to disable timer", e)
     except Exception as e:
@@ -61,7 +61,7 @@ def timer_toggle_cmd(ctx):
     try:
         tm = TimerManager()
         result = tm.toggle()
-        log(green(result), silent=silent)
+        log(green(result), ctx)
     except TimerError as e:
         err(ctx, "Failed to toggle timer", e)
     except Exception as e:
@@ -87,7 +87,7 @@ def timer_status_cmd(ctx):
             f"Time left: {format_by_value(time_left_str, ("Timer is not active", "Timer expired recently"))}",
         ]
 
-        log("\n".join(result_msgs), silent=silent)
+        log("\n".join(result_msgs), ctx)
     except TimerError as e:
         err(ctx, "Failed to get timer status", e)
     except Exception as e:

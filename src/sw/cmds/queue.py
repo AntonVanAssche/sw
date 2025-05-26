@@ -36,7 +36,7 @@ def add_cmd(ctx, patterns, shuffle):
     silent = ctx.obj.get("silent", False)
     try:
         count = qm.add(patterns, shuffle=shuffle)
-        log(f"Added {green(count)} file(s) to the queue.", silent=silent)
+        log(f"Added {green(count)} file(s) to the queue.", ctx)
     except InvalidPatternError as e:
         err(ctx, "Invalid pattern provided", e)
     except QueueError as e:
@@ -63,7 +63,7 @@ def rm_cmd(ctx, patterns):
         if count == 0:
             warn("No matching entries found to remove.", silent=silent)
         else:
-            log(f"Removed {red(count)} file(s) from the queue.", silent=silent)
+            log(f"Removed {red(count)} file(s) from the queue.", ctx)
     except InvalidPatternError as e:
         err(ctx, "Invalid pattern provided", e)
     except QueueError as e:
@@ -86,7 +86,7 @@ def list_cmd(ctx):
     try:
         entries = qm.list()
         for entry in enumerate(entries, start=1):
-            log(f"{yellow(entry[0])}: {green(entry[1])}", silent=silent)
+            log(f"{yellow(entry[0])}: {green(entry[1])}", ctx)
     except QueueEmptyError:
         warn("No wallpapers in the queue.", silent=silent)
     except QueueError as e:
@@ -108,7 +108,7 @@ def empty_cmd(ctx):
     silent = ctx.obj.get("silent", False)
     try:
         qm.empty()
-        log("Queue emptied.", silent=silent)
+        log("Queue emptied.", ctx)
     except QueueError as e:
         err(ctx, "Failed to empty queue", e)
     except Exception as e:
@@ -128,7 +128,7 @@ def shuffle_cmd(ctx):
     silent = ctx.obj.get("silent", False)
     try:
         qm.shuffle()
-        log("Queue shuffled.", silent=silent)
+        log("Queue shuffled.", ctx)
     except QueueEmptyError:
         warn("Queue is empty, nothing to shuffle.", silent=silent)
     except QueueError as e:

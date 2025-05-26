@@ -56,7 +56,7 @@ def set_cmd(ctx, path, use_dir, favorite):
         if wallpaper is None:
             wallpaper = wm.set_wallpaper(path)
 
-        log(f"Wallpaper set: {green(wallpaper)}", silent=ctx.obj.get("silent", False))
+        log(f"Wallpaper set: {green(wallpaper)}", ctx)
 
     except ValueError as ve:
         err(ctx, "Invalid history index format", ve)

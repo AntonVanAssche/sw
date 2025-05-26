@@ -64,4 +64,4 @@ def status_cmd(ctx, name, directory, hide_path, hide_timer):
     if not hide_timer and timer_info:
         parts.append(f"Timer: {format_by_value(tm.time_left(), ("Timer is not active", "Timer expired recently"))}")
 
-    log("\n".join(parts), silent=ctx.obj.get("silent"))
+    log("\n".join(parts), ctx=ctx)

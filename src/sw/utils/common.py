@@ -9,19 +9,34 @@ from PIL import Image
 from sw.utils.style import bold, red
 
 Image.MAX_IMAGE_PIXELS = None
+ANSI_ESCAPE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
 
 
-def log(message: str, silent: bool = False):
+def strip_ansi(text: str) -> str:
+    return ANSI_ESCAPE.sub("", text)
+
+
+def log(message: str, ctx: dict = None):
+    ctx = ctx or {}
+    silent = ctx.obj.get("silent", False)
+    notify = ctx.obj.get("notify", True)
+
     if silent:
         return
 
-    if sys.stdout.isatty():
-        print(message)
-    else:
-        notify2.init("Switch Wallpaper")
-        n = notify2.Notification("Switch Wallpaper (script)", message)
-        n.set_timeout(3000)
-        n.show()
+    if notify:
+        try:
+            notify2.init("Switch Wallpaper")
+            clean_message = strip_ansi(message)
+            n = notify2.Notification("Switch Wallpaper (script)", clean_message)
+            n.set_timeout(3000)
+            n.show()
+        except Exception as e:
+            print(message)
+
+        return
+
+    print(message)
 
 
 def warn(message: str, silent: bool = False):

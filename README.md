@@ -67,6 +67,7 @@ Options:
   -c, --color [auto|never|always]
                                   Control colored output: auto, never, or
                                   always.
+  -n, --notify                    Send notifications for actions.
   -h, --help                      Show this message and exit.
   -v, --version                   Show the installed version of sw.
 

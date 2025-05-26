@@ -39,7 +39,7 @@ def prev_cmd(ctx):
 
     try:
         wallpaper = wm.set_wallpaper(path)
-        log(f"Wallpaper set: {green(wallpaper)}", silent=ctx.obj.get("silent", False))
+        log(f"Wallpaper set: {green(wallpaper)}", ctx)
     except (WallpaperError, InvalidImageError, SubprocessError, HistoryWriteError) as e:
         err(ctx, "Failed to set previous wallpaper", e)
     except Exception as e:

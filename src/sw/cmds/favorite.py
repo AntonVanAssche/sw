@@ -63,7 +63,7 @@ def favorite_add_cmd(ctx, path):
 
         favorites.append(path)
         CONFIG.set("favorites", favorites)
-        log(f"Added to {cyan('favorites')}: {green(path)}", silent=silent)
+        log(f"Added to {cyan('favorites')}: {green(path)}", ctx)
 
     except ValueError as ve:
         err(ctx, red("Invalid history index format or no current wallpaper"), ve)
@@ -100,19 +100,19 @@ def favorite_rm_cmd(ctx, path):
 
             removed = favorites.pop(index)
             CONFIG.set("favorites", favorites)
-            log(f"Removed from {cyan('favorites')}: {red(removed)}", silent=silent)
+            log(f"Removed from {cyan('favorites')}: {red(removed)}", ctx)
             return
 
         else:
             path = str(Path(path).expanduser().resolve())
 
         if path not in favorites:
-            log(yellow("Not in favorites."), silent=silent)
+            log(yellow("Not in favorites."), ctx)
             return
 
         favorites.remove(path)
         CONFIG.set("favorites", favorites)
-        log(f"Removed from {cyan('favorites')}: {red(path)}", silent=silent)
+        log(f"Removed from {cyan('favorites')}: {red(path)}", ctx)
 
     except ValueError as ve:
         err(ctx, red("Invalid history index format or no current wallpaper"), ve)
@@ -143,6 +143,6 @@ def favorite_list_cmd(ctx):
 
     if favorites:
         for idx, path in enumerate(favorites, start=1):
-            log(f"{yellow(str(idx))}: {green(path)}", silent=silent)
+            log(f"{yellow(str(idx))}: {green(path)}", ctx)
     else:
         warn("No favorites found.", silent=silent)

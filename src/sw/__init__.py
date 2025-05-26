@@ -36,13 +36,15 @@ from sw.utils import style
     default="auto",
     help="Control colored output: auto, never, or always.",
 )
+@click.option("--notify", "-n", is_flag=True, help="Send notifications for actions.")
 @click.help_option("--help", "-h")
 @click.version_option(__version__, "--version", "-v", help="Show the installed version of sw.")
 @click.pass_context
-def cli(ctx, silent, color):
+def cli(ctx, silent, color, notify):
     """sw - An overly complicated wallpaper switcher for Hyprland."""
     ctx.ensure_object(dict)
     ctx.obj["color"] = color
+    ctx.obj["notify"] = notify
     ctx.obj["silent"] = silent
 
     style.set_color_mode(color)
