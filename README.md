@@ -63,19 +63,20 @@ Usage: sw [OPTIONS] COMMAND [ARGS]...
   sw - An overly complicated wallpaper switcher for Hyprland.
 
 Options:
-  -s, --silent   Suppress output when necessary.
-  -h, --help     Show this message and exit.
-  -v, --version  Show the installed version of sw.
+  -s, --silent                    Suppress output when necessary.
+  -h, --help                      Show this message and exit.
+  -v, --version                   Show the installed version of sw.
 
 Commands:
-  config   Manage the configuration of sw
-  history  Manage wallpaper history
-  next     Set the next wallpaper
-  prev     Set the previous wallpaper in the queue
-  queue    Manage the wallpaper queue
-  set      Set a wallpaper from file or dir
-  status   Show current wallpaper status
-  timer    Manage the sw systemd timer
+  config    Manage the configuration of sw
+  favorite  Manage favorite wallpapers
+  history   Manage wallpaper history
+  next      Set the next wallpaper
+  prev      Set the previous wallpaper in the queue
+  queue     Manage the wallpaper queue
+  set       Set a wallpaper from file or dir
+  status    Show current wallpaper status
+  timer     Manage the sw systemd timer
 ```
 
 For more detailed information on each command, you can use the `--help`.
