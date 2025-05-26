@@ -26,6 +26,7 @@ jobs:
           dnf install -y \
             dbus-devel \
             gcc \
+            git \
             glib2 \
             glib2-devel \
             python3 \
@@ -42,7 +43,7 @@ jobs:
 
       - name: Analysing the code with pylint
         run: |
-          find /root/src/sw -type f -name '*.py' -execdir pylint --rcfile=/root/.pylintrc {} \;
+          pylint --rcfile=/root/.pylintrc $(find /root/src/sw -type f -name "*.py")
 
   rpmlint:
     runs-on: ubuntu-latest
