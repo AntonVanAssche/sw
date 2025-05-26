@@ -39,7 +39,7 @@ def history_list_cmd(ctx, lines, unique):
     try:
         all_entries = hm.read()
     except Exception as e:
-        err(ctx, "Failed to read history", e)
+        err("Failed to read history", e, ctx)
 
     if lines is not None:
         start_index = max(0, len(all_entries) - lines)
@@ -93,7 +93,7 @@ def history_rm_cmd(ctx, index, all, duplicates, since, yes):
     try:
         entries = hm.read()
     except Exception as e:
-        err(ctx, "Failed to read history", e)
+        err("Failed to read history", e, ctx)
 
     original_count = len(entries)
 
@@ -113,7 +113,7 @@ def history_rm_cmd(ctx, index, all, duplicates, since, yes):
         try:
             hm.remove_by_index(index - 1)
         except Exception as e:
-            err(ctx, f"Failed to remove history entry {index}", e)
+            err(f"Failed to remove history entry {index}", e, ctx)
 
         log(f"Removed entry {green(entry.path)}", ctx)
         return
@@ -136,12 +136,12 @@ def history_rm_cmd(ctx, index, all, duplicates, since, yes):
         try:
             hm.remove_all()
         except Exception as e:
-            err(ctx, "Failed to remove all history entries", e)
+            err("Failed to remove all history entries", e, ctx)
         log(green("All history cleared."), ctx)
         return
 
     if len(remaining) == original_count:
-        warn("No entries removed.", silent=ctx.obj.get("silent"))
+        warn("No entries removed.", ctx)
         return
 
     if not yes:
@@ -157,7 +157,7 @@ def history_rm_cmd(ctx, index, all, duplicates, since, yes):
                 removed_entries.append(entries[i].path)
                 hm.remove_by_index(i)
     except Exception as e:
-        err(ctx, "Failed to remove some history entries", e)
+        err("Failed to remove some history entries", e, ctx)
         return
 
     for path in removed_entries:

@@ -33,16 +33,15 @@ def add_cmd(ctx, patterns, shuffle):
     to the queue. Directories are not allowed unless expanded via glob.
     """
     qm = QueueManager()
-    silent = ctx.obj.get("silent", False)
     try:
         count = qm.add(patterns, shuffle=shuffle)
         log(f"Added {green(count)} file(s) to the queue.", ctx)
     except InvalidPatternError as e:
-        err(ctx, "Invalid pattern provided", e)
+        err("Invalid pattern provided", e, ctx)
     except QueueError as e:
-        err(ctx, "Failed to add entries", e)
+        err("Failed to add entries", e, ctx)
     except Exception as e:
-        err(ctx, "Unexpected error while adding entries", e)
+        err("Unexpected error while adding entries", e, ctx)
 
 
 @queue_cmd.command("rm")
@@ -57,19 +56,18 @@ def rm_cmd(ctx, patterns):
     will be removed from the queue.
     """
     qm = QueueManager()
-    silent = ctx.obj.get("silent", False)
     try:
         count = qm.rm(patterns)
         if count == 0:
-            warn("No matching entries found to remove.", silent=silent)
+            warn("No matching entries found to remove.", ctx)
         else:
             log(f"Removed {red(count)} file(s) from the queue.", ctx)
     except InvalidPatternError as e:
-        err(ctx, "Invalid pattern provided", e)
+        err("Invalid pattern provided", e, ctx)
     except QueueError as e:
-        err(ctx, "Failed to remove entries", e)
+        err("Failed to remove entries", e, ctx)
     except Exception as e:
-        err(ctx, "Unexpected error while removing entries", e)
+        err("Unexpected error while removing entries", e, ctx)
 
 
 @queue_cmd.command("list")
@@ -82,17 +80,17 @@ def list_cmd(ctx):
     If the queue is empty, an informative message will be printed.
     """
     qm = QueueManager()
-    silent = ctx.obj.get("silent", False)
+
     try:
         entries = qm.list()
         for entry in enumerate(entries, start=1):
             log(f"{yellow(entry[0])}: {green(entry[1])}", ctx)
     except QueueEmptyError:
-        warn("No wallpapers in the queue.", silent=silent)
+        warn("No wallpapers in the queue.", ctx)
     except QueueError as e:
-        err(ctx, "Failed to list queue entries", e)
+        err("Failed to list queue entries", e, ctx)
     except Exception as e:
-        err(ctx, "Unexpected error while listing queue", e)
+        err("Unexpected error while listing queue", e, ctx)
 
 
 @queue_cmd.command("empty")
@@ -105,14 +103,14 @@ def empty_cmd(ctx):
     This cannot be undone.
     """
     qm = QueueManager()
-    silent = ctx.obj.get("silent", False)
+
     try:
         qm.empty()
         log("Queue emptied.", ctx)
     except QueueError as e:
-        err(ctx, "Failed to empty queue", e)
+        err("Failed to empty queue", e, ctx)
     except Exception as e:
-        err(ctx, "Unexpected error while emptying queue", e)
+        err("Unexpected error while emptying queue", e, ctx)
 
 
 @queue_cmd.command("shuffle")
@@ -125,13 +123,12 @@ def shuffle_cmd(ctx):
     This does not add or remove wallpapers—only changes their order.
     """
     qm = QueueManager()
-    silent = ctx.obj.get("silent", False)
     try:
         qm.shuffle()
         log("Queue shuffled.", ctx)
     except QueueEmptyError:
-        warn("Queue is empty, nothing to shuffle.", silent=silent)
+        warn("Queue is empty, nothing to shuffle.", ctx)
     except QueueError as e:
-        err(ctx, "Failed to shuffle queue", e)
+        err("Failed to shuffle queue", e, ctx)
     except Exception as e:
-        err(ctx, "Unexpected error while shuffling queue", e)
+        err("Unexpected error while shuffling queue", e, ctx)

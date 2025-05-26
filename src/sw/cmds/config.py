@@ -82,9 +82,9 @@ def get_config(ctx, key):
             else:
                 log(f"{cyan(key)}: {green(value)}", ctx)
     except (ConfigError, KeyError) as e:
-        err(ctx, f"Error getting key '{key}'", e)
+        err(f"Error getting key '{key}'", e, ctx)
     except Exception as e:
-        err(ctx, f"Unexpected error while getting key '{key}'", e)
+        err(f"Unexpected error while getting key '{key}'", e, ctx)
 
 
 @config_cmd.command("set")
@@ -100,7 +100,6 @@ def set_config(ctx, key, values, append, remove):
     Supports space-separated values for list-type keys (e.g. 'recency_exclude').
     Numeric values will be stored as numbers automatically.
     """
-    silent = ctx.obj.get("silent")
     key = key.strip()
 
     try:
@@ -126,9 +125,9 @@ def set_config(ctx, key, values, append, remove):
             CONFIG.set(key, val)
             log(f"Set '{cyan(key)}' to: {green(val)}", ctx)
     except (ConfigError, click.BadParameter, KeyError) as e:
-        err(ctx, f"Failed set key '{key}'", e)
+        err(f"Failed set key '{key}'", e, ctx)
     except Exception as e:
-        err(ctx, "Unexpected error", e)
+        err("Unexpected error", e, ctx)
 
 
 @config_cmd.command("unset")
@@ -145,9 +144,9 @@ def unset_config(ctx, key):
         CONFIG.set(key, None)
         log(f"{cyan(key)}: {yellow('unset')}", ctx)
     except (ConfigError, KeyError) as e:
-        err(ctx, f"Failed to unset key '{key}'", e)
+        err(f"Failed to unset key '{key}'", e, ctx)
     except Exception as e:
-        err(ctx, "Unexpected error", e)
+        err("Unexpected error", e, ctx)
 
 
 @config_cmd.command("show")
@@ -163,4 +162,4 @@ def show_config(ctx):
         config_data = CONFIG.get_all()
         log(format_json(config_data), ctx)
     except Exception as e:
-        err(ctx, "Failed to show configuration", e)
+        err("Failed to show configuration", e, ctx)

@@ -25,22 +25,22 @@ def prev_cmd(ctx):
     try:
         history = hm.read()
     except HistoryReadError as e:
-        err(ctx, "Failed to read wallpaper history", e)
+        err("Failed to read wallpaper history", e, ctx)
     except Exception as e:
-        err(ctx, "Unexpected error while reading wallpaper history", e)
+        err("Unexpected error while reading wallpaper history", e, ctx)
 
     if len(history) < 2:
-        err(ctx, "Not enough history to go back to previous wallpaper", Exception("History too short"))
+        err("Not enough history to go back to previous wallpaper", Exception("History too short"), ctx)
 
     try:
         path = history[-2].path
     except Exception as e:
-        err(ctx, "Failed to get previous wallpaper path", e)
+        err("Failed to get previous wallpaper path", e, ctx)
 
     try:
         wallpaper = wm.set_wallpaper(path)
         log(f"Wallpaper set: {green(wallpaper)}", ctx)
     except (WallpaperError, InvalidImageError, SubprocessError, HistoryWriteError) as e:
-        err(ctx, "Failed to set previous wallpaper", e)
+        err("Failed to set previous wallpaper", e, ctx)
     except Exception as e:
-        err(ctx, "Unexpected error while setting previous wallpaper", e)
+        err("Unexpected error while setting previous wallpaper", e, ctx)

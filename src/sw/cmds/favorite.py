@@ -43,8 +43,6 @@ def favorite_add_cmd(ctx, path):
     Add a wallpaper to your favorites.
     If PATH is not provided, the current wallpaper is used.
     """
-    silent = ctx.obj.get("silent", False)
-
     try:
         if not path:
             path = get_current_wallpaper()
@@ -58,7 +56,7 @@ def favorite_add_cmd(ctx, path):
         favorites = CONFIG.get("favorites", [])
 
         if path in favorites:
-            warn("Already in favorites.", silent=silent)
+            warn("Already in favorites.", ctx)
             return
 
         favorites.append(path)
@@ -66,13 +64,13 @@ def favorite_add_cmd(ctx, path):
         log(f"Added to {cyan('favorites')}: {green(path)}", ctx)
 
     except ValueError as ve:
-        err(ctx, red("Invalid history index format or no current wallpaper"), ve)
+        err(red("Invalid history index format or no current wallpaper"), ve, ctx)
     except HistoryIndexError as hie:
-        err(ctx, red(f"History index out of range: {path}"), hie)
+        err(red(f"History index out of range: {path}"), hie, ctx)
     except ConfigError as ce:
-        err(ctx, red("Failed to update favorites"), ce)
+        err(red("Failed to update favorites"), ce, ctx)
     except Exception as e:
-        err(ctx, red("Unexpected error while adding to favorites"), e)
+        err(red("Unexpected error while adding to favorites"), e, ctx)
 
 
 @favorite_cmd.command("rm")
@@ -85,8 +83,6 @@ def favorite_rm_cmd(ctx, path):
     You can provide the full PATH or use @N to remove by index (e.g. @2).
     If no PATH is given, it removes the current wallpaper from favorites.
     """
-    silent = ctx.obj.get("silent", False)
-
     try:
         favorites = CONFIG.get("favorites", [])
 
@@ -115,15 +111,15 @@ def favorite_rm_cmd(ctx, path):
         log(f"Removed from {cyan('favorites')}: {red(path)}", ctx)
 
     except ValueError as ve:
-        err(ctx, red("Invalid history index format or no current wallpaper"), ve)
+        err(red("Invalid history index format or no current wallpaper"), ve, ctx)
     except HistoryIndexError as hie:
-        err(ctx, red("No current wallpaper found"), hie)
+        err(red("No current wallpaper found"), hie, ctx)
     except IndexError as ie:
-        err(ctx, red("Invalid favorite index"), ie)
+        err(red("Invalid favorite index"), ie, ctx)
     except ConfigError as ce:
-        err(ctx, red("Failed to update favorites"), ce)
+        err(red("Failed to update favorites"), ce, ctx)
     except Exception as e:
-        err(ctx, red("Unexpected error while removing from favorites"), e)
+        err(red("Unexpected error while removing from favorites"), e, ctx)
 
 
 @favorite_cmd.command("list")
@@ -132,17 +128,15 @@ def favorite_list_cmd(ctx):
     """
     List all favorite wallpapers.
     """
-    silent = ctx.obj.get("silent", False)
-
     try:
         favorites = CONFIG.get("favorites", [])
     except ConfigError as ce:
-        err(ctx, red("Failed to read favorites"), ce)
+        err(red("Failed to read favorites"), ce, ctx)
     except Exception as e:
-        err(ctx, red("Unexpected error while listing favorites"), e)
+        err(red("Unexpected error while listing favorites"), e, ctx)
 
     if favorites:
         for idx, path in enumerate(favorites, start=1):
             log(f"{yellow(str(idx))}: {green(path)}", ctx)
     else:
-        warn("No favorites found.", silent=silent)
+        warn("No favorites found.", ctx)

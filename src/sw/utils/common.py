@@ -6,7 +6,7 @@ import sys
 import notify2
 from PIL import Image
 
-from sw.utils.style import bold, red
+from sw.utils.style import bold, red, yellow
 
 Image.MAX_IMAGE_PIXELS = None
 ANSI_ESCAPE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
@@ -16,47 +16,62 @@ def strip_ansi(text: str) -> str:
     return ANSI_ESCAPE.sub("", text)
 
 
+def notify(title: str, message: str):
+    try:
+        notify2.init("Switch Wallpaper")
+        n = notify2.Notification(title, message)
+        n.set_timeout(3000)
+        n.show()
+    except Exception:
+        pass
+
+
 def log(message: str, ctx: dict = None):
     ctx = ctx or {}
     silent = ctx.obj.get("silent", False)
-    notify = ctx.obj.get("notify", True)
+    notify_enabled = ctx.obj.get("notify", True)
 
     if silent:
         return
 
-    if notify:
-        try:
-            notify2.init("Switch Wallpaper")
-            clean_message = strip_ansi(message)
-            n = notify2.Notification("Switch Wallpaper (script)", clean_message)
-            n.set_timeout(3000)
-            n.show()
-        except Exception as e:
-            print(message)
-
-        return
+    if notify_enabled:
+        clean_message = strip_ansi(message)
+        notify("Switch Wallpaper (script)", clean_message)
 
     print(message)
 
 
-def warn(message: str, silent: bool = False):
+def warn(message: str, ctx: dict = None):
+    ctx = ctx or {}
+    silent = ctx.obj.get("silent", False)
+    notify_enabled = ctx.obj.get("notify", True)
+
+    if silent:
+        return
+
     if sys.stderr.isatty():
         print(bold(yellow(message)), file=sys.stderr)
+    elif notify_enabled:
+        notify("Switch Wallpaper (script)", f"Warning: {message}")
     else:
-        notify2.init("Switch Wallpaper")
-        n = notify2.Notification("Switch Wallpaper (script)", f"Error: {message}")
-        n.set_timeout(3000)
-        n.show()
+        print(f"Warning: {message}", file=sys.stderr)
 
 
-def err(ctx: str, message: str, exc: Exception):
+def err(message: str, exc: Exception, ctx: dict = None):
+    ctx = ctx or {}
+    silent = ctx.obj.get("silent", False)
+    notify_enabled = ctx.obj.get("notify", True)
+
+    if silent:
+        ctx.exit(1)
+
+    error_msg = f"{message}: {exc}"
     if sys.stderr.isatty():
-        print(f"{bold(red('Error:'))} {message}: {exc}", file=sys.stderr)
+        print(f"{bold(red('Error:'))} {error_msg}", file=sys.stderr)
+    elif notify_enabled:
+        notify("Switch Wallpaper (script)", f"Error: {error_msg}")
     else:
-        notify2.init("Switch Wallpaper")
-        n = notify2.Notification("Switch Wallpaper (script)", f"Error: {message}")
-        n.set_timeout(3000)
-        n.show()
+        print(f"Error: {error_msg}", file=sys.stderr)
 
     ctx.exit(1)
 
