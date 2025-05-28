@@ -4,7 +4,7 @@
 sw - An overly complicated wallpaper switcher for Hyprland.
 """
 
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 
 import json
 import os
