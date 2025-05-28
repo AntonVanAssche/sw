@@ -40,7 +40,7 @@ def _set_wallpaper_by_history_index(wm, path):
     return wallpaper
 
 
-@click.command("set", short_help="Set a wallpaper from file or dir")
+@click.command("set", short_help="Set a wallpaper")
 @click.help_option("--help", "-h")
 @click.argument("path", required=False)
 @click.option("--use-dir", "-d", is_flag=True, help="Use the directory of the current wallpaper.")
