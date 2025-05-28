@@ -4,6 +4,8 @@
 TimerManager module for controlling and querying systemd timers via DBus.
 """
 
+import time
+
 import dbus
 
 
@@ -142,12 +144,8 @@ class TimerManager:
             raise e
 
     def _get_system_uptime(self) -> float:
-        """Read system uptime in seconds."""
-        try:
-            with open("/proc/uptime", "r", encoding="utf-8") as f:
-                return float(f.readline().split()[0])
-        except (OSError, ValueError) as e:
-            raise TimerUptimeReadError("Unable to read system uptime.") from e
+        """Return monotonic system uptime in seconds."""
+        return time.monotonic()
 
     def _prettify_time(self, seconds: int) -> str:
         """Convert seconds to a human-readable time string."""
