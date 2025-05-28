@@ -8,7 +8,7 @@ from sw.utils.common import err, log
 from sw.utils.style import green
 
 
-@click.command("prev", short_help="Set the previous wallpaper in the queue")
+@click.command("prev", short_help="Switch back to the previous wallpaper")
 @click.help_option("--help", "-h")
 @click.pass_context
 def prev_cmd(ctx):
