@@ -92,32 +92,32 @@ Below is an example configuration:
 
 ```json
 {
-  "hyprpaper_config_file": "~/.config/hypr/hyprpaper.conf",
-  "hyprlock_config_file": "~/.config/hypr/hyprlock.conf",
-  "queue_file": "~/.cache/sw-queue",
-  "history_file": "~/.cache/sw-history",
-  "history_limit": 500,
-  "recency_timeout": 28800,
-  "recency_exclude": [
-    "~/Pictures/Wallpapers/Cars/"
-  ],
   "favorites": [
     "~/Pictures/Wallpapers/Nature/Sunset.jpg",
     "~/Pictures/Wallpapers/Nature/Beach.jpg"
   ],
+  "history_limit": 500,
+  "hyprlock_config_file": "~/.config/hypr/hyprlock.conf",
+  "hyprpaper_config_file": "~/.config/hypr/hyprpaper.conf",
+  "queue_file": "~/.cache/sw-queue",
+  "history_file": "~/.cache/sw-history",
+  "recency_exclude": [
+    "~/Pictures/Wallpapers/Cars/"
+  ],
+  "recency_timeout": 28800,
   "wallpaper_dir": "~/Pictures/Wallpapers/Nature/"
 }
 ```
 
 ### Configuration Options
 
-- `hyprpaper_config_file`: Path to the Hyprpaper configuration file.
-- `hyprlock_config_file`: Path to the Hyprlock configuration file.
-- `queue_file`: Path to the wallpaper queue file.
 - `history_file`: Path to the wallpaper history file.
 - `history_limit`: Maximum number of wallpapers to keep in history.
-- `recency_timeout`: Time in seconds to consider a wallpaper recent.
+- `hyprlock_config_file`: Path to the Hyprlock configuration file.
+- `hyprpaper_config_file`: Path to the Hyprpaper configuration file.
+- `queue_file`: Path to the wallpaper queue file.
 - `recency_exclude`: List of directories to exclude from recency checks.
+- `recency_timeout`: Time in seconds to consider a wallpaper recent.
 - `wallpaper_dir`: Directory containing wallpapers.
 
 ### Configuring sw
