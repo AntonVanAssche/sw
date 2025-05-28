@@ -101,6 +101,10 @@ Below is an example configuration:
   "recency_exclude": [
     "~/Pictures/Wallpapers/Cars/"
   ],
+  "favorites": [
+    "~/Pictures/Wallpapers/Nature/Sunset.jpg",
+    "~/Pictures/Wallpapers/Nature/Beach.jpg"
+  ],
   "wallpaper_dir": "~/Pictures/Wallpapers/Nature/"
 }
 ```
