@@ -3,7 +3,7 @@ click==8.2.1
 dbus-python==1.4.0
 notify2==0.3.1
 packaging==25.0
-pillow==11.2.1
+pillow==11.3.0
 pyproject_hooks==1.2.0
 setuptools==80.9.0
 wheel==0.45.1
