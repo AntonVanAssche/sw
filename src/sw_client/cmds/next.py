@@ -2,10 +2,10 @@
 
 import click
 
-from sw.core.history import HistoryWriteError
-from sw.core.wallpaper import InvalidImageError, SubprocessError, WallpaperError, WallpaperManager
-from sw.utils.common import err, log
-from sw.utils.style import green
+from sw_client.core.history import HistoryWriteError
+from sw_client.core.wallpaper import InvalidImageError, SubprocessError, WallpaperError, WallpaperManager
+from sw_client.utils.common import err, log
+from sw_client.utils.style import green
 
 
 @click.command("next", short_help="Set the next wallpaper")

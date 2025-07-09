@@ -1,11 +1,5 @@
 #!/usr/bin/env python
 
-"""
-sw - An overly complicated wallpaper switcher for Hyprland.
-"""
-
-__version__ = "1.5.0"
-
 import json
 import os
 import shlex
@@ -14,16 +8,17 @@ import sys
 
 import click
 
-from sw.cmds.config import config_cmd
-from sw.cmds.favorite import favorite_cmd
-from sw.cmds.history import history_cmd
-from sw.cmds.next import next_cmd
-from sw.cmds.prev import prev_cmd
-from sw.cmds.queue import queue_cmd
-from sw.cmds.set import set_cmd
-from sw.cmds.status import status_cmd
-from sw.cmds.timer import timer_cmd
-from sw.utils import style
+from sw_client import __version__
+from sw_client.cmds.config import config_cmd
+from sw_client.cmds.favorite import favorite_cmd
+from sw_client.cmds.history import history_cmd
+from sw_client.cmds.next import next_cmd
+from sw_client.cmds.prev import prev_cmd
+from sw_client.cmds.queue import queue_cmd
+from sw_client.cmds.set import set_cmd
+from sw_client.cmds.status import status_cmd
+from sw_client.cmds.timer import timer_cmd
+from sw_client.utils import style
 
 
 # pylint: disable=no-value-for-parameter

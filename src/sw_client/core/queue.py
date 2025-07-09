@@ -8,7 +8,7 @@ import glob
 import random
 from pathlib import Path
 
-from sw.core.config import Config
+from sw_client.core.config import Config
 
 
 class QueueError(Exception):
