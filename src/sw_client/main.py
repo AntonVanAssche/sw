@@ -8,7 +8,6 @@ import sys
 
 import click
 
-from sw_client import __version__
 from sw_client.cmds.config import config_cmd
 from sw_client.cmds.favorite import favorite_cmd
 from sw_client.cmds.history import history_cmd
@@ -19,6 +18,7 @@ from sw_client.cmds.set import set_cmd
 from sw_client.cmds.status import status_cmd
 from sw_client.cmds.timer import timer_cmd
 from sw_client.utils import style
+from sw_lib import __version__
 
 
 # pylint: disable=no-value-for-parameter
