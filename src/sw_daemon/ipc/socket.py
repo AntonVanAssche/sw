@@ -2,7 +2,9 @@ import logging
 import os
 import socket
 
-SOCKET_PATH = "/tmp/sw-daemon.sock"
+from sw_lib.config import Config
+
+SOCKET_PATH = str(Config(read_only=True).socket_path)
 
 
 class SocketServer:

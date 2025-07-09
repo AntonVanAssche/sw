@@ -5,11 +5,11 @@ from pathlib import Path
 
 import click
 
-from sw_client.core.config import Config
 from sw_client.core.history import HistoryIndexError, HistoryManager, HistoryWriteError
 from sw_client.core.wallpaper import InvalidImageError, SubprocessError, WallpaperError, WallpaperManager
 from sw_client.utils.common import err, log, warn
 from sw_client.utils.style import green
+from sw_lib.config import Config
 
 
 def _resolve_favorite_path(path, favorites):

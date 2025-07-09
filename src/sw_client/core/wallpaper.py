@@ -11,10 +11,10 @@ import subprocess
 import time
 from pathlib import Path
 
-from sw_client.core.config import Config
 from sw_client.core.history import HistoryIndexError, HistoryManager, HistoryWriteError
 from sw_client.core.queue import QueueManager
 from sw_client.utils.common import is_valid_image, replace_lines_in_file
+from sw_lib.config import Config
 
 
 class WallpaperError(Exception):
