@@ -5,10 +5,12 @@ import logging
 import click
 
 from sw_daemon.app import start
+from sw_lib import __version__
 
 
 @click.command()
 @click.help_option("--help", "-h")
+@click.version_option(__version__, "--version", "-v", help="Show the installed version of sw.")
 @click.option("--debug", "-d", is_flag=True, help="Enable debug logging.")
 @click.argument("image_path", default=None, required=False, type=click.Path(exists=True))
 def cli(debug, image_path):
