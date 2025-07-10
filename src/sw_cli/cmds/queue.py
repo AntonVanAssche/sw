@@ -2,9 +2,9 @@
 
 import click
 
-from sw.core.queue import InvalidPatternError, QueueEmptyError, QueueError, QueueManager
-from sw.utils.common import err, log, warn
-from sw.utils.style import green, red, yellow
+from sw_cli.core.queue import InvalidPatternError, QueueEmptyError, QueueError, QueueManager
+from sw_cli.utils.common import err, log, warn
+from sw_cli.utils.style import green, red, yellow
 
 
 # pylint: disable=unused-argument

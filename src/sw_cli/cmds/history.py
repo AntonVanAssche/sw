@@ -4,9 +4,9 @@ import time
 
 import click
 
-from sw.core.history import HistoryManager
-from sw.utils.common import err, log, warn
-from sw.utils.style import bold, green, red, yellow
+from sw_cli.core.history import HistoryManager
+from sw_cli.utils.common import err, log, warn
+from sw_cli.utils.style import bold, green, red, yellow
 
 
 # pylint: disable=unused-argument

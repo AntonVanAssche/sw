@@ -5,9 +5,9 @@ from typing import get_type_hints
 
 import click
 
-from sw.core.config import Config, ConfigError
-from sw.utils.common import err, log
-from sw.utils.style import cyan, format_json, green, red, yellow
+from sw_cli.core.config import Config, ConfigError
+from sw_cli.utils.common import err, log
+from sw_cli.utils.style import cyan, format_json, green, red, yellow
 
 CONFIG = Config()
 

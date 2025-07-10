@@ -2,17 +2,17 @@
 
 import click
 
-from sw import __version__
-from sw.cmds.config import config_cmd
-from sw.cmds.favorite import favorite_cmd
-from sw.cmds.history import history_cmd
-from sw.cmds.next import next_cmd
-from sw.cmds.prev import prev_cmd
-from sw.cmds.queue import queue_cmd
-from sw.cmds.set import set_cmd
-from sw.cmds.status import status_cmd
-from sw.cmds.timer import timer_cmd
-from sw.utils import style
+from sw_cli import __version__
+from sw_cli.cmds.config import config_cmd
+from sw_cli.cmds.favorite import favorite_cmd
+from sw_cli.cmds.history import history_cmd
+from sw_cli.cmds.next import next_cmd
+from sw_cli.cmds.prev import prev_cmd
+from sw_cli.cmds.queue import queue_cmd
+from sw_cli.cmds.set import set_cmd
+from sw_cli.cmds.status import status_cmd
+from sw_cli.cmds.timer import timer_cmd
+from sw_cli.utils import style
 
 
 # pylint: disable=no-value-for-parameter

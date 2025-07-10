@@ -2,10 +2,10 @@
 
 import click
 
-from sw.core.history import HistoryManager, HistoryReadError, HistoryWriteError
-from sw.core.wallpaper import InvalidImageError, SubprocessError, WallpaperError, WallpaperManager
-from sw.utils.common import err, log
-from sw.utils.style import green
+from sw_cli.core.history import HistoryManager, HistoryReadError, HistoryWriteError
+from sw_cli.core.wallpaper import InvalidImageError, SubprocessError, WallpaperError, WallpaperManager
+from sw_cli.utils.common import err, log
+from sw_cli.utils.style import green
 
 
 @click.command("prev", short_help="Switch back to the previous wallpaper")
