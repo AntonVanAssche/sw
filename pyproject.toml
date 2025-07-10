@@ -28,7 +28,7 @@ dependencies = [
 ]
 
 [project.scripts]
-sw = "sw:cli"
+sw = "sw.main:cli"
 
 [project.urls]
 Homepage = "https://github.com/AntonVanAssche/sw"
@@ -36,3 +36,6 @@ Issues = "https://github.com/AntonVanAssche/sw/issues"
 
 [tool.setuptools.dynamic]
 version = {attr = "sw.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

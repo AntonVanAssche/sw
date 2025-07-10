@@ -1,4 +1,4 @@
-%define _version 1.5.0
+%define _version 1.6.0
 %define _release 1
 
 Name:           sw
