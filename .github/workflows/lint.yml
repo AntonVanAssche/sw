@@ -32,18 +32,27 @@ jobs:
             python3 \
             python3-devel \
             python3-pip \
-            python3-pkgconfig
+            python3-pkgconfig \
+            wayland-protocols-devel \
+            wayland-devel
           python -m pip install --upgrade pip
           pip install pylint
           pip install \
             click \
             dbus-python \
             notify2 \
-            pillow
+            pillow \
+            python-wayland \
+            pywayland
+          pywayland-scanner -i \
+            /usr/share/wayland/wayland.xml \
+            /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml \
+            protocols/wlr-layer-shell-unstable-v1.xml \
+            -o /usr/lib64/python3.13/site-packages/protocols
 
       - name: Analysing the code with pylint
         run: |
-          pylint --rcfile=/root/.pylintrc $(find /root/src/sw_{cli,lib} -type f -name "*.py")
+          pylint --rcfile=/root/.pylintrc $(find /root/src/sw_{cli,daemon,lib} -type f -name "*.py")
 
   rpmlint:
     runs-on: ubuntu-latest

@@ -57,6 +57,16 @@ PackageCloud: <https://packagecloud.io/AntonVanAssche/sw>
 ### General Command Structure
 
 ```console
+$ sw-daemon --help
+Usage: sw-daemon [OPTIONS] [IMAGE_PATH]
+
+  sw-daemon - A daemon for managing wallpapers in Hyprland.
+
+Options:
+  -h, --help     Show this message and exit.
+  -v, --version  Show the installed version of sw.
+  -d, --debug    Enable debug logging.
+
 $ sw --help
 Usage: sw [OPTIONS] COMMAND [ARGS]...
 

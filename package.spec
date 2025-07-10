@@ -10,6 +10,7 @@ URL:            https://github.com/AntonVanAssche/sw
 
 Source0:        %{name}-%{_version}.tar.gz
 Source1:        %{name}
+Source2:        %{name}-daemon
 
 BuildRequires:  python3-devel
 Requires:       python3
@@ -41,6 +42,7 @@ find ./%{name} -type f -exec %{__sed} -i 's|%{_builddir}|/usr/local/lib|g' '{}' 
 %{__cp} -r ./%{name} %{buildroot}/usr/local/lib
 %{__mkdir_p} %{buildroot}/usr/local/bin
 %{__install} -D -m 0755 %{SOURCE1} %{buildroot}/usr/local/bin/%{name}
+%{__install} -D -m 0755 %{SOURCE2} %{buildroot}/usr/local/bin/%{name}-daemon
 %{py3_shebang_fix} %{buildroot}/usr/local/lib/%{name} &>/dev/null
 
 %files
