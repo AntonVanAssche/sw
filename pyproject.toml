@@ -29,6 +29,7 @@ dependencies = [
 
 [project.scripts]
 sw = "sw_cli.main:cli"
+sw-daemon = "sw_daemon.main:cli"
 
 [project.urls]
 Homepage = "https://github.com/AntonVanAssche/sw"
