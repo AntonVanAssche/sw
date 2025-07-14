@@ -1,142 +1,200 @@
-#!/usr/bin/env python3
-
-"""
-Handles the configuration of sw.
-
-Example config:
-
-{
-  "hyprpaper_config_file": "/path/to/hyprpaper/config/file",
-  "hyprlock_config_file": "/path/to/hyprlock/config/file",
-  "queue_file": "~/.cache/sw-queue",
-  "history_file": "~/.cache/sw-history",
-  "history_limit": 500,
-  "recency_timeout": 28800,
-  "recency_exclude": [
-    "/path/to/dir/to/exclude1",
-  ],
-  "wallpaper_dir": "/path/to/default/wallpaper/dir"
-}
-"""
+#!/usr/bin/env python
 
 import json
+from functools import cached_property
 from pathlib import Path
 
 
 class ConfigError(Exception):
-    """Custom exception for config-related errors."""
+    """Base class for configuration-related errors."""
 
 
 class Config:
-    """Handles the configuration of sw."""
+    DEFAULT_CONFIG = {
+        "wallpaper": {
+            "directory": str(Path.home() / "Pictures" / "Wallpapers"),
+            "favorites": [],
+            "recency": {
+                "exclude": [],
+                "timeout": 28800,
+            },
+        },
+        "hyprlock": {
+            "config": str(Path.home() / ".config" / "hypr" / "hyprlock.conf"),
+        },
+        "hyprpaper": {
+            "config": str(Path.home() / ".config" / "hypr" / "hyprpaper.conf"),
+        },
+        "history": {
+            "file": "~/.cache/sw-history",
+            "limit": 500,
+        },
+        "queue": {
+            "file": "~/.cache/sw-queue",
+        },
+    }
 
-    def __init__(self):
-        """Initialize the Config class and load configuration data."""
-        self._config_file = Path.home() / ".config" / "sw" / "config.json"
+    def __init__(self, *, config_file=None, indent_json=True):
+        self._config_file = Path(config_file) if config_file else Path.home() / ".config" / "sw" / "config.json"
+        self._indent_json = indent_json
+        self._data = self._load_merged_config()
 
-        if not self._config_file.exists():
-            raise ConfigError(f"Configuration file not found at: {self._config_file}")
+    def _is_valid_key(self, dotted_key):
+        keys = dotted_key.split(".")
+        data = self.DEFAULT_CONFIG
+        for key in keys:
+            if not isinstance(data, dict) or key not in data:
+                return False
+            data = data[key]
+        return True
 
+    def _load_merged_config(self):
+        """Load user config and merge with defaults."""
+        config = self._deep_copy(self.DEFAULT_CONFIG)
+        if self._config_file.exists():
+            try:
+                with self._config_file.open(encoding="utf-8") as f:
+                    user_data = json.load(f)
+                    if not isinstance(user_data, dict):
+                        raise ConfigError("Config file must contain a JSON object")
+                    self._merge_dicts(config, user_data)
+            except Exception as e:
+                raise ConfigError(f"Failed to load config: {e}") from e
+        return config
+
+    @staticmethod
+    def _merge_dicts(base, override, path=""):
+        for key, value in override.items():
+            full_path = f"{path}.{key}" if path else key
+            if key not in base:
+                raise ConfigError(f"Invalid configuration key: '{full_path}'")
+            if isinstance(base[key], dict) and isinstance(value, dict):
+                Config._merge_dicts(base[key], value, full_path)
+            else:
+                base[key] = value
+
+    @staticmethod
+    def _deep_copy(data):
+        return json.loads(json.dumps(data))
+
+    def _get_nested(self, dotted_key, default=None):
+        keys = dotted_key.split(".")
+        data = self._data
+        for key in keys:
+            if not isinstance(data, dict) or key not in data:
+                if default is not None:
+                    return default
+                raise ConfigError(f"Invalid config key: '{dotted_key}'")
+            data = data[key]
+        return data
+
+    def _set_nested(self, dotted_key, value):
+        keys = dotted_key.split(".")
+        data = self._data
+        for key in keys[:-1]:
+            if key not in data or not isinstance(data[key], dict):
+                data[key] = {}
+            data = data[key]
+        data[keys[-1]] = value
+
+    def _unset_nested(self, dotted_key):
+        keys = dotted_key.split(".")
+        data = self._data
+        for key in keys[:-1]:
+            if key not in data or not isinstance(data[key], dict):
+                return
+            data = data[key]
+        data.pop(keys[-1], None)
+
+    def _clear_cache(self):
+        self.__dict__.pop("_hyprpaper_config", None)
+        self.__dict__.pop("_hyprlock_config", None)
+        self.__dict__.pop("_favorites", None)
+        self.__dict__.pop("_history_file", None)
+        self.__dict__.pop("_history_limit", None)
+        self.__dict__.pop("_queue_file", None)
+        self.__dict__.pop("_recency_timeout", None)
+        self.__dict__.pop("_recency_exclude", None)
+        self.__dict__.pop("_wallpaper_dir", None)
+
+    def get(self, key, default=None):
+        return self._get_nested(key, default)
+
+    def set(self, key, value):
+        self._set_nested(key, value)
+        self._clear_cache()
+        self.save()
+
+    def unset(self, key):
+        self._unset_nested(key)
+        self._clear_cache()
+        self.save()
+
+    def save(self):
         try:
-            with self._config_file.open("r", encoding="utf-8") as f:
-                self._data = json.load(f)
-        except json.JSONDecodeError as e:
-            raise ConfigError(f"Config file is not valid JSON: {e}") from e
-        except OSError as e:
-            raise ConfigError(f"Could not read config file: {e}") from e
-
-        if not isinstance(self._data, dict):
-            raise ConfigError("Config file must contain a JSON object at top level.")
-
-    def get(self, key: str, default=None):
-        """Retrieve a configuration value, with optional default fallback."""
-        if key not in self._data and default is None:
-            raise ConfigError(f"Missing required config key: '{key}'")
-        return self._data.get(key, default)
-
-    def set(self, key: str, value) -> None:
-        """Set and persist a configuration key-value pair."""
-        if not self._is_valid_key(key):
-            raise ConfigError(f"Invalid configuration key: '{key}' (must correspond to a property)")
-
-        self._data[key] = value
-        try:
+            self._config_file.parent.mkdir(parents=True, exist_ok=True)
             with self._config_file.open("w", encoding="utf-8") as f:
-                json.dump(self._data, f, indent=2)
-        except OSError as e:
-            raise ConfigError(f"Failed to write to config file: {e}") from e
+                if self._indent_json:
+                    json.dump(self._data, f, indent=2)
+                else:
+                    json.dump(self._data, f)
+        except Exception as e:
+            raise ConfigError(f"Failed to write config: {e}") from e
 
-    def get_all(self) -> dict:
-        """Return the entire config as a dictionary."""
-        return self._data
-
-    def _is_valid_key(self, key: str) -> bool:
-        """Only allow setting keys with a corresponding property."""
-        return hasattr(self.__class__, key) and isinstance(getattr(self.__class__, key), property)
+    def get_all(self):
+        return self._deep_copy(self._data)
 
     @property
     def config_file(self) -> Path:
-        """Return the path to the config file."""
         return self._config_file
 
-    @property
-    def favorites(self) -> list[Path]:
-        """Return a list of favorite wallpapers."""
-        favorites = self.get("favorites", [])
-        if not isinstance(favorites, list):
-            raise ConfigError("'favorites' must be a list")
-        return [Path(f).expanduser().resolve() for f in favorites]
-
-    @property
-    def hyprpaper_config_file(self) -> Path:
-        """Return the path to the Hyprpaper configuration file."""
-        return Path(self.get("hyprpaper_config_file", "~/.config/hypr/hyprpaper.conf")).expanduser().resolve()
-
-    @property
-    def hyprlock_config_file(self) -> Path:
-        """Return the path to the Hyprlock configuration file."""
-        return Path(self.get("hyprlock_config_file", "~/.config/hypr/hyprlock.conf")).expanduser().resolve()
-
-    @property
-    def history_file(self) -> Path:
-        """Return the path to the history file."""
-        return Path(self.get("history_file", "~/.cache/sw-history")).expanduser().resolve()
-
-    @property
-    def history_limit(self) -> int:
-        """Return the history limit."""
-        val = self.get("history_limit", 500)
-        try:
-            return int(val)
-        except (TypeError, ValueError) as e:
-            raise ConfigError(f"Invalid value for 'history_limit' (expected int): {val}") from e
-
-    @property
-    def queue_file(self) -> Path:
-        """Return the path to the queue file."""
-        return Path(self.get("queue_file", "~/.cache/sw-queue")).expanduser().resolve()
-
-    @property
-    def recency_timeout(self) -> int:
-        """Return the recency timeout in seconds."""
-        val = self.get("recency_timeout", 3600)
-        try:
-            return int(val)
-        except (TypeError, ValueError) as e:
-            raise ConfigError(f"Invalid value for 'recency_timeout' (expected int): {val}") from e
-
-    @property
-    def recency_exclude(self) -> list[Path]:
-        """Return a list of directories to exclude from recency tracking."""
-        excludes = self.get("recency_exclude", [])
-        if not isinstance(excludes, list):
-            raise ConfigError("'recency_exclude' must be a list")
-        return [Path(e).expanduser().resolve() for e in excludes]
-
-    @property
-    def wallpaper_dir(self) -> Path:
-        """Return the path to the default wallpaper directory."""
-        path = self.get("wallpaper_dir")
+    @cached_property
+    def hyprpaper_config(self) -> Path:
+        path = self.get("hyprpaper.config")
         if not path:
-            raise ConfigError("Missing required config key: 'wallpaper_dir'")
-        return Path(path).expanduser().resolve()
+            raise ConfigError("Missing required config key: 'hyprpaper.config'")
+        return Path(path).expanduser().absolute()
+
+    @cached_property
+    def hyprlock_config(self) -> Path:
+        path = self.get("hyprlock.config")
+        if not path:
+            raise ConfigError("Missing required config key: 'hyprlock.config'")
+        return Path(path).expanduser().absolute()
+
+    @cached_property
+    def favorites(self) -> list[Path]:
+        favs = self.get("wallpaper.favorites", [])
+        if not isinstance(favs, list):
+            raise ConfigError("'wallpaper.favorites' must be a list")
+        return [Path(f).expanduser().absolute() for f in favs]
+
+    @cached_property
+    def history_file(self) -> Path:
+        return Path(self.get("history.file")).expanduser().absolute()
+
+    @cached_property
+    def history_limit(self) -> int:
+        return int(self.get("history.limit"))
+
+    @cached_property
+    def queue_file(self) -> Path:
+        return Path(self.get("queue.file")).expanduser().absolute()
+
+    @cached_property
+    def recency_timeout(self) -> int:
+        return int(self.get("wallpaper.recency.timeout"))
+
+    @cached_property
+    def recency_exclude(self) -> list[Path]:
+        excludes = self.get("wallpaper.recency.exclude", [])
+        if not isinstance(excludes, list):
+            raise ConfigError("'wallpaper.recency.exclude' must be a list")
+        return [Path(e).expanduser().absolute() for e in excludes]
+
+    @cached_property
+    def wallpaper_dir(self) -> Path:
+        path = self.get("wallpaper.directory")
+        if not path:
+            raise ConfigError("Missing required config key: 'wallpaper.directory'")
+        return Path(path).expanduser().absolute()

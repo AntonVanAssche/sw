@@ -163,14 +163,14 @@ class WallpaperManager:
         """
         try:
             replace_lines_in_file(
-                self.config.hyprpaper_config_file,
+                self.config.hyprpaper_config,
                 {
                     r"^(preload\s*=\s*).*$": rf"\1{path}",
                     r"^(wallpaper\s*=\s*,).*$": rf"\1{path}",
                 },
             )
             replace_lines_in_file(
-                self.config.hyprlock_config_file,
+                self.config.hyprlock_config,
                 {
                     r"^(\s*path\s*=\s*).*$": rf"\1{path}",
                 },

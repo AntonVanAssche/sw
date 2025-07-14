@@ -92,33 +92,46 @@ Below is an example configuration:
 
 ```json
 {
-  "favorites": [
-    "~/Pictures/Wallpapers/Nature/Sunset.jpg",
-    "~/Pictures/Wallpapers/Nature/Beach.jpg"
-  ],
-  "history_limit": 500,
-  "hyprlock_config_file": "~/.config/hypr/hyprlock.conf",
-  "hyprpaper_config_file": "~/.config/hypr/hyprpaper.conf",
-  "queue_file": "~/.cache/sw-queue",
-  "history_file": "~/.cache/sw-history",
-  "recency_exclude": [
-    "~/Pictures/Wallpapers/Cars/"
-  ],
-  "recency_timeout": 28800,
-  "wallpaper_dir": "~/Pictures/Wallpapers/Nature/"
+  "wallpaper": {
+    "directory": "~/Pictures/Wallpapers",
+    "favorites": [
+      "~/Pictures/Wallpapers/Nature/Sunset.jpg",
+      "~/Pictures/Wallpapers/Nature/Beach.jpg"
+    ],
+    "recency": {
+      "exclude": [
+        "~/Pictures/Wallpapers/Cars/"
+      ],
+      "timeout": 28800
+    }
+  },
+  "hyprlock": {
+    "config": "~/.config/hypr/hyprlock.conf"
+  },
+  "hyprpaper": {
+    "config": "/home/vassa/.config/hypr/hyprpaper.conf"
+  },
+  "history": {
+    "file": "~/.cache/sw-history",
+    "limit": 500
+  },
+  "queue": {
+    "file": "~/.cache/sw-queue"
+  }
 }
 ```
 
 ### Configuration Options
 
-- `history_file`: Path to the wallpaper history file.
-- `history_limit`: Maximum number of wallpapers to keep in history.
-- `hyprlock_config_file`: Path to the Hyprlock configuration file.
-- `hyprpaper_config_file`: Path to the Hyprpaper configuration file.
-- `queue_file`: Path to the wallpaper queue file.
-- `recency_exclude`: List of directories to exclude from recency checks.
-- `recency_timeout`: Time in seconds to consider a wallpaper recent.
-- `wallpaper_dir`: Directory containing wallpapers.
+- `wallpaper.directory`: Directory containing wallpapers.
+- `wallpaper.favorites`: List of favorite wallpapers.
+- `wallpaper.recency.exclude`: List of directories to exclude from recency checks.
+- `wallpaper.recency.timeout`: Time in seconds to consider a wallpaper recent.
+- `hyprlock.config`: Path to the Hyprlock configuration file.
+- `hyprpaper.config`: Path to the Hyprpaper configuration file.
+- `queue.file`: Path to the wallpaper queue file.
+- `history.file`: Path to the wallpaper history file.
+- `history.limit`: Maximum number of entries in the wallpaper history.
 
 ### Configuring sw
 
