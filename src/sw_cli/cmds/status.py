@@ -5,10 +5,10 @@ from pathlib import Path
 
 import click
 
-from sw.core.history import HistoryManager, HistoryReadError
-from sw.core.timer import TimerError, TimerManager
-from sw.utils.common import err, log
-from sw.utils.style import format_by_value, green
+from sw_cli.core.history import HistoryManager, HistoryReadError
+from sw_cli.core.timer import TimerError, TimerManager
+from sw_cli.utils.common import err, log
+from sw_cli.utils.style import format_by_value, green
 
 
 @click.command("status", short_help="Show current wallpaper status")

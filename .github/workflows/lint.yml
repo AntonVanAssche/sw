@@ -43,7 +43,7 @@ jobs:
 
       - name: Analysing the code with pylint
         run: |
-          pylint --rcfile=/root/.pylintrc $(find /root/src/sw -type f -name "*.py")
+          pylint --rcfile=/root/.pylintrc $(find /root/src/sw_cli -type f -name "*.py")
 
   rpmlint:
     runs-on: ubuntu-latest

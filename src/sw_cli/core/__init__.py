@@ -7,7 +7,7 @@ from .timer import TimerManager
 from .wallpaper import WallpaperManager
 
 __doc__ = """
-sw.core - Core module for managing configuration, queues, and wallpapers.
+sw_cli.core - Core module for managing configuration, queues, and wallpapers.
 
 Managers available:
 - Config: Handles the configuration of the application.

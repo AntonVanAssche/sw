@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from sw.cli import cli
+from sw_cli.cli import cli
 
 
 def main():

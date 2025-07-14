@@ -6,7 +6,7 @@ import sys
 import notify2
 from PIL import Image
 
-from sw.utils.style import bold, red, yellow
+from sw_cli.utils.style import bold, red, yellow
 
 Image.MAX_IMAGE_PIXELS = None
 ANSI_ESCAPE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")

@@ -2,9 +2,9 @@
 
 import click
 
-from sw.core.timer import TimerError, TimerManager
-from sw.utils.common import err, log
-from sw.utils.style import format_boolean, format_by_value, green
+from sw_cli.core.timer import TimerError, TimerManager
+from sw_cli.utils.common import err, log
+from sw_cli.utils.style import format_boolean, format_by_value, green
 
 
 # pylint: disable=unused-argument
