@@ -127,6 +127,9 @@ Below is an example configuration:
   },
   "queue": {
     "file": "~/.cache/sw-queue"
+  },
+  "daemon": {
+    "socket_path": "/tmp/sw-daemon.sock"
   }
 }
 ```
@@ -142,6 +145,7 @@ Below is an example configuration:
 - `queue.file`: Path to the wallpaper queue file.
 - `history.file`: Path to the wallpaper history file.
 - `history.limit`: Maximum number of entries in the wallpaper history.
+- `daemon.socket_path`: Path to the socket used by the sw daemon.
 
 ### Configuring sw
 

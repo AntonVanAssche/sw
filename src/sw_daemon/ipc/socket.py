@@ -4,12 +4,21 @@ import logging
 import os
 import socket
 
-SOCKET_PATH = "/tmp/sw-daemon.sock"
+from sw_lib.config import Config, ConfigError, ConfigLoadError, ConfigValidationError
 
 
 class SocketServer:
-    def __init__(self, socket_path, wallpaper_setter):
-        self.socket_path = socket_path
+    def __init__(self, wallpaper_setter):
+        try:
+            self.config = Config()
+            self.socket_path = str(self.config.socket_path)
+        except ConfigLoadError as e:
+            raise RuntimeError("Failed to load configuration") from e
+        except ConfigValidationError as e:
+            raise RuntimeError("Invalid configuration") from e
+        except ConfigError as e:
+            raise RuntimeError("Configuration error") from e
+
         self.wallpaper_setter = wallpaper_setter
 
         self.logger = logging.getLogger("sw-daemon.SocketServer")

@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
-from .socket import SOCKET_PATH, SocketServer
+from .socket import SocketServer
 
 __all__ = [
     "SocketServer",
-    "SOCKET_PATH",
 ]

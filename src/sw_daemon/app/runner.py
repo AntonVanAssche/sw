@@ -3,7 +3,7 @@
 import logging
 import threading
 
-from sw_daemon.ipc.socket import SOCKET_PATH, SocketServer
+from sw_daemon.ipc.socket import SocketServer
 
 from .core import SWDaemon
 
@@ -14,7 +14,7 @@ def start(image_path=None):
     setter = SWDaemon(image_path)
     setter.assert_initialised()
 
-    server = SocketServer(SOCKET_PATH, setter)
+    server = SocketServer(setter)
     socket_thread = threading.Thread(target=server.serve_forever, daemon=True)
     socket_thread.start()
 

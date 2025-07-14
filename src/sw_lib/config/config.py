@@ -105,7 +105,7 @@ class Config:
         data.pop(keys[-1], None)
 
     def _clear_cache(self):
-        self.__dict__.pop("_daemon.socket_path", None)
+        self.__dict__.pop("_socket_path", None)
         self.__dict__.pop("_hyprlock_config", None)
         self.__dict__.pop("_favorites", None)
         self.__dict__.pop("_history_file", None)
