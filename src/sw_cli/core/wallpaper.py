@@ -11,6 +11,7 @@ import subprocess
 import time
 from pathlib import Path
 
+from sw_cli.core.client import SWDaemonClient, SWDaemonConnectionError, SWDaemonError, SWDaemonProtocolError
 from sw_cli.core.history import HistoryIndexError, HistoryManager, HistoryWriteError
 from sw_cli.core.queue import QueueManager
 from sw_cli.utils.common import is_valid_image, replace_lines_in_file
@@ -42,6 +43,7 @@ class WallpaperManager:
         self.config = Config()
         self.queue = QueueManager()
         self.history = HistoryManager()
+        self.client = SWDaemonClient()
 
     def set_wallpaper(self, path: str | Path = None) -> Path:
         """
@@ -84,8 +86,18 @@ class WallpaperManager:
         if not is_valid_image(str(target)):
             raise InvalidImageError(f"Invalid image file: {target}")
 
-        self._update_configs(str(target))
-        self._restart_hyprpaper()
+        try:
+            self.client.set_wallpaper(str(target))
+        except SWDaemonConnectionError as e:
+            raise WallpaperError(f"Failed to connect to the daemon: {e}") from e
+        except SWDaemonProtocolError as e:
+            raise WallpaperError(f"Protocol error while applying wallpaper: {e}") from e
+        except SWDaemonError as e:
+            raise WallpaperError(f"Daemon error while applying wallpaper: {e}") from e
+        except Exception as e:
+            raise WallpaperError(f"Unexpected error while applying wallpaper: {e}") from e
+
+        self._update_hyprlock_config(str(target))
 
         try:
             self.history.add(str(target))
@@ -151,9 +163,9 @@ class WallpaperManager:
 
         return random.choice(candidates)
 
-    def _update_configs(self, path: str):
+    def _update_hyprlock_config(self, path: str):
         """
-        Update configuration files for Hyprpaper and Hyprlock with the new wallpaper path.
+        Update configuration files for Hyprlock with the new wallpaper path.
 
         Args:
             path (str): The wallpaper file path to update in configs.
@@ -163,13 +175,6 @@ class WallpaperManager:
         """
         try:
             replace_lines_in_file(
-                self.config.hyprpaper_config,
-                {
-                    r"^(preload\s*=\s*).*$": rf"\1{path}",
-                    r"^(wallpaper\s*=\s*,).*$": rf"\1{path}",
-                },
-            )
-            replace_lines_in_file(
                 self.config.hyprlock_config,
                 {
                     r"^(\s*path\s*=\s*).*$": rf"\1{path}",
@@ -177,19 +182,3 @@ class WallpaperManager:
             )
         except Exception as e:
             raise WallpaperError(f"Failed to update wallpaper configs: {e}") from e
-
-    def _restart_hyprpaper(self):
-        """
-        Restart the Hyprpaper service to apply wallpaper changes.
-
-        Raises:
-            SubprocessError: If restarting the wallpaper daemon fails.
-        """
-        try:
-            subprocess.run(["pkill", "-x", "hyprpaper"], check=False)
-            time.sleep(1)
-
-            # pylint: disable=consider-using-with
-            subprocess.Popen(["hyprpaper"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except Exception as e:
-            raise SubprocessError(f"Failed to restart hyprpaper: {e}") from e

@@ -118,9 +118,6 @@ Below is an example configuration:
   "hyprlock": {
     "config": "~/.config/hypr/hyprlock.conf"
   },
-  "hyprpaper": {
-    "config": "/home/vassa/.config/hypr/hyprpaper.conf"
-  },
   "history": {
     "file": "~/.cache/sw-history",
     "limit": 500
@@ -141,7 +138,6 @@ Below is an example configuration:
 - `wallpaper.recency.exclude`: List of directories to exclude from recency checks.
 - `wallpaper.recency.timeout`: Time in seconds to consider a wallpaper recent.
 - `hyprlock.config`: Path to the Hyprlock configuration file.
-- `hyprpaper.config`: Path to the Hyprpaper configuration file.
 - `queue.file`: Path to the wallpaper queue file.
 - `history.file`: Path to the wallpaper history file.
 - `history.limit`: Maximum number of entries in the wallpaper history.
