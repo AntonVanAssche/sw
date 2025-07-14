@@ -1,23 +1,15 @@
 #!/usr/bin/env python
 
-from pathlib import Path
-from typing import get_type_hints
-
 import click
 
-from sw_cli.utils.common import err, log
-from sw_cli.utils.style import cyan, format_json, green, red, yellow
-from sw_lib.config import Config, ConfigError
-
-CONFIG = Config()
+from sw_cli.utils import cyan, err, format_json, green, log, red, yellow
+from sw_lib.config import Config, ConfigError, ConfigKeyError, ConfigLoadError, ConfigValidationError, ConfigWriteError
 
 
-def is_list_property(prop_name: str) -> bool:
-    """Check if a config property returns a list."""
-    prop = getattr(Config, prop_name, None)
-    return isinstance(prop, property) and (
-        get_type_hints(prop.fget).get("return") == list[Path] or get_type_hints(prop.fget).get("return") == list
-    )
+def is_list_property(config: Config, key: str) -> bool:
+    """Check if a config key path points to a list-type value."""
+    value = config.get(key, None)
+    return isinstance(value, list)
 
 
 def parse_val(val: str) -> int | float | str:
@@ -31,35 +23,34 @@ def parse_val(val: str) -> int | float | str:
             return val.strip()
 
 
-def update_list_key(key: str, values: tuple[str], append: bool, remove: bool):
-    current = CONFIG.get(key, [])
+def update_list_key(config: Config, key: str, values: tuple[str], append: bool, remove: bool):
+    """Update a list-type config key by appending, removing, or setting new values."""
+    current = config.get(key, [])
     if not isinstance(current, list):
         raise click.BadParameter(f"Key '{key}' is not a list")
 
     if append:
         new = list(dict.fromkeys(current + list(values)))
-        CONFIG.set(key, new)
+        config.set(key, new)
         return "append", key, values
 
     if remove:
         new = [v for v in current if v not in values]
-        CONFIG.set(key, new)
+        config.set(key, new)
         return "remove", key, values
 
-    CONFIG.set(key, list(values))
+    config.set(key, list(values))
     return "set", key, values
 
 
-# pylint: disable=unused-argument
 @click.group("config", short_help="Manage the configuration of sw")
 @click.help_option("--help", "-h")
-@click.pass_context
-def config_cmd(ctx):
+def config_cmd():
     """
     Manage the configuration of sw.
 
     This allows you to view, set, or unset configuration keys that affect
-    the behavior of the wallpaper switcher.
+    the behavior of sw.
     """
 
 
@@ -68,11 +59,10 @@ def config_cmd(ctx):
 @click.argument("key", required=True)
 @click.pass_context
 def get_config(ctx, key):
-    """
-    Get the current value of a configuration key.
-    """
+    """Get the current value of a configuration key."""
     try:
-        value = CONFIG.get(key)
+        config = Config()
+        value = config.get(key)
         if value is None:
             log(f"{cyan(key)}: {yellow('not set')}", ctx)
         else:
@@ -81,30 +71,28 @@ def get_config(ctx, key):
                 log(f"{cyan(key)}: [{colored_list}]", ctx)
             else:
                 log(f"{cyan(key)}: {green(value)}", ctx)
-    except (ConfigError, KeyError) as e:
+    except (ConfigLoadError, ConfigValidationError, ConfigError, ConfigKeyError) as e:
         err(f"Error getting key '{key}'", e, ctx)
     except Exception as e:
         err(f"Unexpected error while getting key '{key}'", e, ctx)
 
 
 @config_cmd.command("set")
+@click.help_option("--help", "-h")
 @click.argument("key", required=True)
 @click.argument("values", nargs=-1, required=True)
 @click.option("--append", is_flag=True, help="Append value(s) to list-type key.")
 @click.option("--remove", is_flag=True, help="Remove value(s) from list-type key.")
 @click.pass_context
-def set_config(ctx, key, values, append, remove):
-    """
-    Set a configuration key to a new value.
-
-    Supports space-separated values for list-type keys (e.g. 'recency_exclude').
-    Numeric values will be stored as numbers automatically.
-    """
+def set_config_cmd(ctx, key, values, append, remove):
+    """Set a configuration key to a new value."""
     key = key.strip()
 
     try:
-        if is_list_property(key):
-            action, key, vals = update_list_key(key, values, append, remove)
+        config = Config()
+
+        if is_list_property(config, key):
+            action, key, vals = update_list_key(config, key, values, append, remove)
 
             if action == "append":
                 msg = f"Appended to '{cyan(key)}': {', '.join(green(v) for v in vals)}"
@@ -122,10 +110,14 @@ def set_config(ctx, key, values, append, remove):
                 raise click.BadParameter(f"Key '{key}' only accepts a single value, but multiple were given.")
 
             val = parse_val(values[0])
-            CONFIG.set(key, val)
+            config.set(key, val)
             log(f"Set '{cyan(key)}' to: {green(val)}", ctx)
-    except (ConfigError, click.BadParameter, KeyError) as e:
-        err(f"Failed set key '{key}'", e, ctx)
+    except (ConfigLoadError, ConfigValidationError) as e:
+        err("Failed to load configuration", e, ctx)
+    except ConfigWriteError as e:
+        err("Failed to write to configuration.", e, ctx)
+    except ConfigError as e:
+        err("Configuration error.", e, ctx)
     except Exception as e:
         err("Unexpected error", e, ctx)
 
@@ -134,17 +126,19 @@ def set_config(ctx, key, values, append, remove):
 @click.help_option("--help", "-h")
 @click.argument("key", required=True)
 @click.pass_context
-def unset_config(ctx, key):
-    """
-    Unset a configuration key.
-
-    This removes the specified key from the config file.
-    """
+def unset_config_cmd(ctx, key):
+    """Unset a configuration key."""
     try:
-        CONFIG.set(key, None)
+        config = Config()
+
+        config.unset(key)
         log(f"{cyan(key)}: {yellow('unset')}", ctx)
-    except (ConfigError, KeyError) as e:
-        err(f"Failed to unset key '{key}'", e, ctx)
+    except (ConfigLoadError, ConfigValidationError) as e:
+        err("Failed to load configuration", e, ctx)
+    except ConfigWriteError as e:
+        err("Failed to write to configuration.", e, ctx)
+    except ConfigError as e:
+        err("Configuration error.", e, ctx)
     except Exception as e:
         err("Unexpected error", e, ctx)
 
@@ -153,13 +147,12 @@ def unset_config(ctx, key):
 @click.help_option("--help", "-h")
 @click.pass_context
 def show_config(ctx):
-    """
-    Show all configuration settings.
-
-    Displays the entire configuration as a formatted JSON object.
-    """
+    """Show all configuration settings."""
     try:
-        config_data = CONFIG.get_all()
+        config = Config()
+        config_data = config.get_all()
         log(format_json(config_data), ctx)
+    except (ConfigLoadError, ConfigValidationError, ConfigError) as e:
+        err("Failed to load configuration", e, ctx)
     except Exception as e:
-        err("Failed to show configuration", e, ctx)
+        err("Unexpected error while showing configuration", e, ctx)

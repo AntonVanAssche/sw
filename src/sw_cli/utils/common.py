@@ -90,6 +90,24 @@ def replace_lines_in_file(filepath: str, patterns: dict[str, str]):
         file.writelines(new_lines)
 
 
+def resolve_indexed_path(index, entries):
+    """
+    Resolve an indexed path from favorites or history.
+    Index is 1-based, e.g. @1 means entries[0].
+    Can be negative for reverse indexing (e.g. @-1 is entries[-1]).
+    """
+    try:
+        idx = int(index[1:])
+        if idx == 0:
+            raise ValueError("Index must not be 0 (1-based indexing)")
+        if idx > 0:
+            return entries[idx - 1]
+
+        return entries[idx]
+    except (ValueError, IndexError) as e:
+        raise ValueError(f"Invalid index '{index}' for entries: {entries}") from e
+
+
 def is_valid_image(path: str) -> bool:
     try:
         with Image.open(path) as img:
@@ -97,3 +115,31 @@ def is_valid_image(path: str) -> bool:
         return True
     except (IOError, SyntaxError):
         return False
+
+
+def prettify_time(seconds: float) -> str:
+    """Convert seconds to a human-readable time string."""
+    if seconds < 0:
+        return "Invalid time"
+
+    minutes, seconds = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+
+    parts = []
+    if hours:
+        parts.append(f"{int(hours)} hours")
+    if minutes:
+        parts.append(f"{int(minutes)} minutes")
+    if seconds:
+        parts.append(f"{int(seconds)} seconds")
+
+    return ", ".join(parts) if parts else "a moment"
+
+
+def prettify_path(path: str) -> str:
+    """Convert a file path to a more readable format."""
+    name = re.sub(r"^.*[\\/]", "", path)
+    name = re.sub(r"[-_]", " ", name)
+    name = re.sub(r"\.[^.]+$", "", name)
+    name = re.sub(r"\b0*(\d+)\b", r"(\1)", name)
+    return name.strip()

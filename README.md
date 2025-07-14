@@ -86,9 +86,9 @@ Commands:
   favorite  Manage favorite wallpapers
   history   Manage wallpaper history
   next      Set the next wallpaper
-  prev      Set the previous wallpaper in the queue
+  prev      Set the previous wallpaper
   queue     Manage the wallpaper queue
-  set       Set a wallpaper from file or dir
+  set       Set a wallpaper
   status    Show current wallpaper status
   timer     Manage the sw systemd timer
 ```
