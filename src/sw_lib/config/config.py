@@ -4,9 +4,7 @@ import json
 from functools import cached_property
 from pathlib import Path
 
-
-class ConfigError(Exception):
-    """Base class for configuration-related errors."""
+from .errors import ConfigError, ConfigKeyError, ConfigLoadError, ConfigValidationError, ConfigWriteError
 
 
 class Config:
@@ -22,15 +20,15 @@ class Config:
         "hyprlock": {
             "config": str(Path.home() / ".config" / "hypr" / "hyprlock.conf"),
         },
-        "hyprpaper": {
-            "config": str(Path.home() / ".config" / "hypr" / "hyprpaper.conf"),
-        },
         "history": {
             "file": "~/.cache/sw-history",
             "limit": 500,
         },
         "queue": {
             "file": "~/.cache/sw-queue",
+        },
+        "daemon": {
+            "socket_path": "/tmp/sw-daemon.sock",
         },
     }
 
@@ -56,10 +54,10 @@ class Config:
                 with self._config_file.open(encoding="utf-8") as f:
                     user_data = json.load(f)
                     if not isinstance(user_data, dict):
-                        raise ConfigError("Config file must contain a JSON object")
+                        raise ConfigValidationError("Config file must contain a JSON object")
                     self._merge_dicts(config, user_data)
             except Exception as e:
-                raise ConfigError(f"Failed to load config: {e}") from e
+                raise ConfigLoadError(f"Failed to load config: {e}") from e
         return config
 
     @staticmethod
@@ -67,7 +65,7 @@ class Config:
         for key, value in override.items():
             full_path = f"{path}.{key}" if path else key
             if key not in base:
-                raise ConfigError(f"Invalid configuration key: '{full_path}'")
+                raise ConfigKeyError(f"Invalid config key: '{full_path}'")
             if isinstance(base[key], dict) and isinstance(value, dict):
                 Config._merge_dicts(base[key], value, full_path)
             else:
@@ -107,7 +105,7 @@ class Config:
         data.pop(keys[-1], None)
 
     def _clear_cache(self):
-        self.__dict__.pop("_hyprpaper_config", None)
+        self.__dict__.pop("_daemon.socket_path", None)
         self.__dict__.pop("_hyprlock_config", None)
         self.__dict__.pop("_favorites", None)
         self.__dict__.pop("_history_file", None)
@@ -139,7 +137,7 @@ class Config:
                 else:
                     json.dump(self._data, f)
         except Exception as e:
-            raise ConfigError(f"Failed to write config: {e}") from e
+            raise ConfigWriteError(f"Failed to write config: {e}") from e
 
     def get_all(self):
         return self._deep_copy(self._data)
@@ -149,10 +147,10 @@ class Config:
         return self._config_file
 
     @cached_property
-    def hyprpaper_config(self) -> Path:
-        path = self.get("hyprpaper.config")
+    def socket_path(self) -> Path:
+        path = self.get("daemon.socket_path")
         if not path:
-            raise ConfigError("Missing required config key: 'hyprpaper.config'")
+            raise ConfigError("Missing required config key: 'daemon.socket_path'")
         return Path(path).expanduser().absolute()
 
     @cached_property

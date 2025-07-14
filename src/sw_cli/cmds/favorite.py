@@ -4,10 +4,10 @@ from pathlib import Path
 
 import click
 
-from sw_cli.core.config import Config, ConfigError
 from sw_cli.core.history import HistoryIndexError, HistoryManager
 from sw_cli.utils.common import err, log, warn
 from sw_cli.utils.style import cyan, green, red, yellow
+from sw_lib.config import Config, ConfigError
 
 CONFIG = Config()
 

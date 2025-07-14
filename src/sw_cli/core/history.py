@@ -10,7 +10,7 @@ import json
 import time
 from typing import List, Set
 
-from sw_cli.core.config import Config
+from sw_lib.config import Config
 
 
 class HistoryError(Exception):
