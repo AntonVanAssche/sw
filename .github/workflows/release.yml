@@ -16,7 +16,7 @@ jobs:
         shell: bash
 
     container:
-      image: registry.fedoraproject.org/fedora:41
+      image: registry.fedoraproject.org/fedora:42
       env:
         NODE_ENV: development
       volumes:
@@ -79,7 +79,7 @@ jobs:
         shell: bash
 
     container:
-      image: registry.fedoraproject.org/fedora:40
+      image: registry.fedoraproject.org/fedora:42
       env:
         NODE_ENV: development
       volumes:
