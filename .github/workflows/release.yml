@@ -16,7 +16,7 @@ jobs:
         shell: bash
 
     container:
-      image: registry.fedoraproject.org/fedora:41
+      image: registry.fedoraproject.org/fedora:42
       env:
         NODE_ENV: development
       volumes:
@@ -38,8 +38,15 @@ jobs:
             python3 \
             python3-devel \
             python3-pip \
-            python3-pkgconfig
+            python3-pkgconfig \
+            wayland-protocols-devel \
+            wayland-devel
           python3 -m pip install --upgrade -r /root/requirements.txt
+          pywayland-scanner -i \
+            /usr/share/wayland/wayland.xml \
+            /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml \
+            /root/protocols/wlr-layer-shell-unstable-v1.xml \
+            -o /root/src/protocols
 
       - name: Build package
         run: |
@@ -49,7 +56,6 @@ jobs:
         run: |
           rpmdev-setuptree
           cp -r /root/dist/* /github/home/rpmbuild/SOURCES
-          cp -r /root/rpm_src/* /github/home/rpmbuild/SOURCES
           spectool --get-files --sourcedir /root/package.spec
           rpmbuild -bb -v /root/package.spec
           mv /github/home/rpmbuild/RPMS/*/*.rpm /root
@@ -73,7 +79,7 @@ jobs:
         shell: bash
 
     container:
-      image: registry.fedoraproject.org/fedora:40
+      image: registry.fedoraproject.org/fedora:42
       env:
         NODE_ENV: development
       volumes:
@@ -132,5 +138,5 @@ jobs:
           PACKAGE-NAME: ${{ env.RPM_PACKAGE_NAME }}
           PACKAGECLOUD-USERNAME: AntonVanAssche
           PACKAGECLOUD-REPO: sw
-          PACKAGECLOUD-DISTRIB: fedora/41/
+          PACKAGECLOUD-DISTRIB: fedora/42/
           PACKAGECLOUD-TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}

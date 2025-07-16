@@ -16,3 +16,5 @@ disable=raw-checker-failed,
         missing-function-docstring,
         missing-module-docstring,
         missing-class-docstring,
+        too-few-public-methods,
+        duplicate-code

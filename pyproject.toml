@@ -24,18 +24,21 @@ dependencies = [
     "click",
     "dbus-python",
     "notify2",
-    "pillow"
+    "pillow",
+    "python-wayland",
+    "pywayland",
 ]
 
 [project.scripts]
-sw = "sw.main:cli"
+sw = "sw_cli.main:cli"
+sw-daemon = "sw_daemon.main:cli"
 
 [project.urls]
 Homepage = "https://github.com/AntonVanAssche/sw"
 Issues = "https://github.com/AntonVanAssche/sw/issues"
 
 [tool.setuptools.dynamic]
-version = {attr = "sw.__version__"}
+version = {attr = "sw_cli.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
