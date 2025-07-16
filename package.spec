@@ -41,11 +41,12 @@ find ./%{name} -type f -exec %{__sed} -i 's|%{_builddir}|/usr/local/lib|g' '{}' 
 %{__mkdir_p} %{buildroot}/usr/local/lib
 %{__cp} -r ./%{name} %{buildroot}/usr/local/lib
 %{__mkdir_p} %{buildroot}/usr/local/bin
-%{__install} -D -m 0755 %{SOURCE1} %{buildroot}/usr/local/bin/%{name}
-%{__install} -D -m 0755 %{SOURCE2} %{buildroot}/usr/local/bin/%{name}-daemon
+%{__ln_s} /usr/local/lib/%{name}/bin/%{name} %{buildroot}/usr/local/bin/%{name}
+%{__ln_s} /usr/local/lib/%{name}/bin/%{name}-daemon %{buildroot}/usr/local/bin/%{name}-daemon
 %{py3_shebang_fix} %{buildroot}/usr/local/lib/%{name} &>/dev/null
 
 %files
 %defattr(-,root,root,-)
 /usr/local/bin/%{name}
 /usr/local/lib/%{name}
+/usr/local/bin/%{name}-daemon
