@@ -4,9 +4,9 @@ from pathlib import Path
 
 import click
 
-from sw_cli.history import HistoryEntryNotFoundError, HistoryError, HistoryManager
 from sw_cli.utils import cyan, err, green, log, red, resolve_indexed_path, warn, yellow
 from sw_lib.config import Config, ConfigError, ConfigLoadError, ConfigValidationError, ConfigWriteError
+from sw_lib.history import HistoryEntryNotFoundError, HistoryError, HistoryManager
 
 
 @click.group("favorite", short_help="Manage favorite wallpapers")

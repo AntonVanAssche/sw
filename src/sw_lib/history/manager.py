@@ -5,8 +5,8 @@ import time
 from pathlib import Path
 from typing import Set
 
-from sw_cli.history.data_structures import HistoryEntry
-from sw_cli.history.errors import (
+from .data_structures import HistoryEntry
+from .errors import (
     HistoryEntryNotFoundError,
     HistoryNotFoundError,
     HistoryNotReadableError,

@@ -4,7 +4,6 @@ from pathlib import Path
 
 import click
 
-from sw_cli.history import HistoryEntryNotFoundError, HistoryManager
 from sw_cli.systemd import (
     DBusConnectionError,
     SystemdTimer,
@@ -14,6 +13,7 @@ from sw_cli.systemd import (
 )
 from sw_cli.utils import err, format_boolean, green, log, prettify_path, prettify_time, yellow
 from sw_lib.config import Config, ConfigError, ConfigLoadError, ConfigValidationError
+from sw_lib.history import HistoryEntryNotFoundError, HistoryManager
 
 
 def get_wallpaper_info(config):

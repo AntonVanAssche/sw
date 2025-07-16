@@ -4,7 +4,10 @@ import time
 
 import click
 
-from sw_cli.history import (
+from sw_cli.utils.common import err, log, warn
+from sw_cli.utils.style import bold, green, red, yellow
+from sw_lib.config import Config, ConfigError, ConfigLoadError, ConfigValidationError
+from sw_lib.history import (
     HistoryEntryNotFoundError,
     HistoryError,
     HistoryManager,
@@ -13,9 +16,6 @@ from sw_cli.history import (
     HistoryParseError,
     HistoryWriteError,
 )
-from sw_cli.utils.common import err, log, warn
-from sw_cli.utils.style import bold, green, red, yellow
-from sw_lib.config import Config, ConfigError, ConfigLoadError, ConfigValidationError
 
 
 def print_history_entries(ctx, entries):

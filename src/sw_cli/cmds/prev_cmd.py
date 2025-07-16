@@ -2,11 +2,11 @@
 
 import click
 
-from sw_cli.history import HistoryEntryNotFoundError, HistoryManager
 from sw_cli.ipc import SWDaemonError
 from sw_cli.utils import err, green, log
 from sw_cli.wallpaper import WallpaperApplier, WallpaperApplyError, WallpaperNotFoundError
 from sw_lib.config import Config, ConfigError, ConfigLoadError, ConfigValidationError
+from sw_lib.history import HistoryEntryNotFoundError, HistoryManager
 
 
 @click.command("prev", short_help="Set the previous wallpaper")

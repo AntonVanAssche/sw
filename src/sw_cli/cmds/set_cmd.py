@@ -4,12 +4,12 @@ import random
 
 import click
 
-from sw_cli.history import HistoryEntryError, HistoryManager
 from sw_cli.ipc import SWDaemonError
 from sw_cli.queue import QueueManager
 from sw_cli.utils import err, green, log, resolve_indexed_path
 from sw_cli.wallpaper import WallpaperApplier, WallpaperApplyError, WallpaperNotFoundError, WallpaperSelector
 from sw_lib.config import Config, ConfigError, ConfigLoadError, ConfigValidationError
+from sw_lib.history import HistoryEntryError, HistoryManager
 
 
 @click.command("set", short_help="Set a wallpaper")
