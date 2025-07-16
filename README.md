@@ -2,59 +2,57 @@
 
 **sw** is an overly complicated wallpaper switcher designed for
 [Hyprland](https://github.com/hyprwm/Hyprland). Whether you prefer manually
-curated queues, automated random selections, or systemd powered timers, `sw`
+curated queues, automated random selections, or systemd powered timers, **sw**
 keeps your desktop fresh—on your terms.
 
 ## Installation
 
-### From PackageCloud
+You can install **sw** either via **PackageCloud** or **from source**.
 
-sw can be installed in two ways: via PackageCloud or from source. The
-PackageCloud repository hosts both the Python package (compatible with most
-systems) and RPM packages for Red Hat-based systems like Fedora. This makes
-using the PackageCloud repository the easiest and most versatile installation
-option.
+### From PackageCloud (Recommended)
 
-For more details and installation instructions, visit the sw repository on
-PackageCloud: <https://packagecloud.io/AntonVanAssche/sw>
+The PackageCloud repository hosts both:
+
+- A universal Python package
+- RPM packages for Red Hat-based systems like Fedora
+
+This makes PackageCloud the easiest and most flexible way to install **sw**.
+
+View on PackageCloud: [AntonVanAssche/sw](https://packagecloud.io/AntonVanAssche/sw)
 
 ### From Source
 
-1. Clone the repository:
+```console
+# Clone the repo
+git clone https://github.com/AntonVanAssche/sw.git
+cd sw
 
-  ```console
-  git clone https://github.com/AntonVanAssche/sw.git
-  cd jamjar
-  ```
+# Set up virtual environment
+python -m venv venv
+. ./venv/bin/activate
 
-2. Set up a virtual environment:
+# Install dependencies
+pip install -r requirements.txt
 
-  ```console
-  python3 -m venv venv
-  source venv/bin/activate  # For Linux/macOS
-  ```
+# Build the package
+python -m build .
 
-3. Install dependencies:
+# Install the package
+pip install dist/*.whl
+```
 
-  ```console
-  pip install -r requirements.txt
-  ```
+## How It Works
 
-4. Build the package:
+**sw** has two components:
 
-  ```console
-  python -m build .
-  ```
-
-5. Install the package:
-
-  ```console
-  pip install dist/*.whl
-  ```
+- Daemon (sw-daemon): Keeps your wallpaper displayed and ready to change. It
+  exposes a socket for real-time communication.
+- CLI (sw): Handles queueing, history, favorites, config management, and
+  actually telling the daemon what to do.
 
 ## Usage
 
-### General Command Structure
+### Daemon Help
 
 ```console
 $ sw-daemon --help
@@ -66,7 +64,11 @@ Options:
   -h, --help     Show this message and exit.
   -v, --version  Show the installed version of sw.
   -d, --debug    Enable debug logging.
+```
 
+### CLI Help
+
+```console
 $ sw --help
 Usage: sw [OPTIONS] COMMAND [ARGS]...
 
@@ -97,8 +99,9 @@ For more detailed information on each command, you can use the `--help`.
 
 ## Configuration
 
-sw can be configured via a JSON file located at `~/.config/sw/config.json`.
-Below is an example configuration:
+Your main configuration file is located at: `~/.config/sw/config.json`
+
+### Example Configuration
 
 ```json
 {
@@ -131,41 +134,40 @@ Below is an example configuration:
 }
 ```
 
-### Configuration Options
+### Config Options Explained
 
-- `wallpaper.directory`: Directory containing wallpapers.
-- `wallpaper.favorites`: List of favorite wallpapers.
-- `wallpaper.recency.exclude`: List of directories to exclude from recency checks.
-- `wallpaper.recency.timeout`: Time in seconds to consider a wallpaper recent.
-- `hyprlock.config`: Path to the Hyprlock configuration file.
-- `queue.file`: Path to the wallpaper queue file.
-- `history.file`: Path to the wallpaper history file.
-- `history.limit`: Maximum number of entries in the wallpaper history.
-- `daemon.socket_path`: Path to the socket used by the sw daemon.
+| Option | Description |
+| --- | --- |
+| `wallpaper.directory` | Path to your wallpaper folder |
+| `wallpaper.favorites` | List of favorite wallpapers |
+| `wallpaper.recency.exclude` | Directories to exclude from recency checks |
+| `wallpaper.recency.timeout` | Time (seconds) to consider a wallpaper recent |
+| `hyprlock.config` | Path to your Hyprlock config |
+| `history.file` | Where wallpaper history is stored |
+| `history.limit` | Max number of wallpapers to remember |
+| `queue.file` | Path to queue file |
+| `daemon.socket_path` | Socket used by the daemon |
 
-### Configuring sw
+### Using the CLI to Configure
 
-To configure sw, you can either manually edit the `config.json` file or use the
-`config` command.
-
-- To set a configuration option, you can run: `sw config set <option> <value>`.
-- To get a configuration option, you can run: `sw config get <option>`.
-- To view the current configuration, you can run: `sw config show`.
-- To unset a configuration option, you can run: `sw config unset <option>`.
+```console
+sw config set <option> <value>     # Set a config option
+sw config get <option>             # Get the value of a config option
+sw config show                     # Show full config
+sw config unset <option>           # Remove a config option
+```
 
 ## Systemd Timer
 
-sw is meant to be run in combination with a systemd user timer. This timer will
-be responsible for running sw at regular intervals to change the wallpaper.
-Below, you can find a systemd timer unit, and a service unit that can be used to
-accomplish this.
+**sw** is designed to work with a user-level systemd timer to automate wallpaper
+changes.
 
 ### Service Unit
 
 ```console
 $ systemctl --user cat sw.service
 [Unit]
-Description=Set a randeom wallpaper every few minutes
+Description=Set a random wallpaper every few minutes
 
 [Service]
 Type=oneshot
@@ -181,7 +183,7 @@ WantedBy=graphical.target
 ```console
 $ systemctl --user cat sw.timer
 [Unit]
-Description=Set a randeom wallpaper every few minutes
+Description=Set a random wallpaper every few minutes
 Requires=sw.service
 
 [Timer]
@@ -192,13 +194,15 @@ OnUnitActiveSec=15m
 WantedBy=timers.target
 ```
 
-### Managing the Timer
+### Timer Management via CLI
 
-The following commands can be used to manage the systemd timer:
-
-- Enable and start the timer: `sw timer enable`
-- Disable and stop the timer: `sw timer disable`
-- Check the timer status: `sw timer status`
+```console
+sw timer start      # Start the systemd timer
+sw timer stop       # Stop the systemd timer
+sw timer enable     # Enable and start timer, use --now to start immediately
+sw timer disable    # Stop and disable timer, use --now to stop immediately
+sw timer status     # View timer status
+```
 
 ## License
 
