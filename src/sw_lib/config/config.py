@@ -18,6 +18,7 @@ class Config:
             },
         },
         "hyprlock": {
+            "enabled": True,
             "config": str(Path.home() / ".config" / "hypr" / "hyprlock.conf"),
         },
         "history": {
@@ -152,6 +153,10 @@ class Config:
         if not path:
             raise ConfigError("Missing required config key: 'daemon.socket_path'")
         return Path(path).expanduser().absolute()
+
+    @cached_property
+    def hyprlock_enabled(self) -> bool:
+        return self.get("hyprlock.enabled", True)
 
     @cached_property
     def hyprlock_config(self) -> Path:

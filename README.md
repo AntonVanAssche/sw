@@ -1,9 +1,10 @@
 # sw - Wallpaper Switching, Supercharged
 
 **sw** is an overly complicated wallpaper switcher designed for
-[Hyprland](https://github.com/hyprwm/Hyprland). Whether you prefer manually
-curated queues, automated random selections, or systemd powered timers, **sw**
-keeps your desktop fresh—on your terms.
+[Hyprland](https://github.com/hyprwm/Hyprland), but can be used on other Wayland
+compositors as well. Whether you prefer manually curated queues, automated
+random selections, or systemd powered timers, **sw** keeps your desktop
+fresh—on your terms.
 
 ## Installation
 
@@ -119,6 +120,7 @@ Your main configuration file is located at: `~/.config/sw/config.json`
     }
   },
   "hyprlock": {
+    "enabled": true,
     "config": "~/.config/hypr/hyprlock.conf"
   },
   "history": {
@@ -142,6 +144,7 @@ Your main configuration file is located at: `~/.config/sw/config.json`
 | `wallpaper.favorites` | List of favorite wallpapers |
 | `wallpaper.recency.exclude` | Directories to exclude from recency checks |
 | `wallpaper.recency.timeout` | Time (seconds) to consider a wallpaper recent |
+| `hyprlock.enabled` | Whether to enable Hyprlock integration |
 | `hyprlock.config` | Path to your Hyprlock config |
 | `history.file` | Where wallpaper history is stored |
 | `history.limit` | Max number of wallpapers to remember |

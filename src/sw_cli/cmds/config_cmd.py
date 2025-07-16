@@ -12,15 +12,20 @@ def is_list_property(config: Config, key: str) -> bool:
     return isinstance(value, list)
 
 
-def parse_val(val: str) -> int | float | str:
-    """Try to parse a string as int or float; fallback to stripped string."""
+def parse_val(val: str) -> int | float | bool | str:
+    """Try to parse a string as bool, int, or float; fallback to stripped string."""
+    val = val.strip().lower()
+    if val == "true":
+        return True
+    if val == "false":
+        return False
     try:
         return int(val)
     except ValueError:
         try:
             return float(val)
         except ValueError:
-            return val.strip()
+            return val
 
 
 def update_list_key(config: Config, key: str, values: tuple[str], append: bool, remove: bool):

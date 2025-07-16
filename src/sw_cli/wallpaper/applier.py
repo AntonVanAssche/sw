@@ -12,7 +12,13 @@ class WallpaperApplier:
     def __init__(self, history_manager, daemon_client=None):
         try:
             self.config = Config()
-            self.hyprlock_config = self.config.hyprlock_config
+
+            self.hyprlock_enabled = self.config.hyprlock_enabled
+            if self.hyprlock_enabled:
+                if not self.config.hyprlock_config:
+                    raise WallpaperApplyError("Hyprlock integration is enabled but no config file is set.")
+
+                self.hyprlock_config = self.config.hyprlock_config
         except ConfigLoadError as e:
             raise RuntimeError("Failed to load configuration") from e
         except ConfigValidationError as e:
@@ -28,7 +34,10 @@ class WallpaperApplier:
         """
         try:
             self.client.set_wallpaper(str(path))
-            self._update_hyprlock_config(str(path))
+
+            if self.hyprlock_enabled:
+                self._update_hyprlock_config(str(path))
+
             self.history.add(str(path))
         except SWDaemonConnectionError as e:
             raise WallpaperApplyError(f"Failed to connect to the daemon: {e}") from e
