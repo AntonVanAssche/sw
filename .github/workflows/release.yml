@@ -138,5 +138,5 @@ jobs:
           PACKAGE-NAME: ${{ env.RPM_PACKAGE_NAME }}
           PACKAGECLOUD-USERNAME: AntonVanAssche
           PACKAGECLOUD-REPO: sw
-          PACKAGECLOUD-DISTRIB: fedora/41/
+          PACKAGECLOUD-DISTRIB: fedora/42/
           PACKAGECLOUD-TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
