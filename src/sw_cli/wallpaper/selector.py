@@ -26,7 +26,7 @@ class WallpaperSelector:
         """
         try:
             if use_dir:
-                current_wallpaper = self.history.get(-1)
+                current_wallpaper = self.history.get(-1).path
                 if current_wallpaper:
                     current_dir = Path(current_wallpaper).parent
                     return self._pick_from_directory(current_dir)
