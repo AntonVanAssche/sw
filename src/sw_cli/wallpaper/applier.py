@@ -33,12 +33,13 @@ class WallpaperApplier:
         Actually sends the set command to the daemon and updates history.
         """
         try:
-            self.client.set_wallpaper(str(path))
+            absolute_path = Path(path).resolve()
+            self.client.set_wallpaper(str(absolute_path))
 
             if self.hyprlock_enabled:
-                self._update_hyprlock_config(str(path))
+                self._update_hyprlock_config(str(absolute_path))
 
-            self.history.add(str(path))
+            self.history.add(str(absolute_path))
         except SWDaemonConnectionError as e:
             raise WallpaperApplyError(f"Failed to connect to the daemon: {e}") from e
         except SWDaemonProtocolError as e:

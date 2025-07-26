@@ -2,7 +2,6 @@
 
 import ctypes
 import logging
-import os
 
 from PIL import Image
 
@@ -15,10 +14,7 @@ class ImageRenderer:
 
         self.logger = logging.getLogger("sw-daemon.ImageRenderer")
 
-    def load_image(self, file):
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        path = os.path.join(script_dir, file)
-
+    def load_image(self, path):
         self.logger.info("Loading image from: %s", path)
 
         try:
