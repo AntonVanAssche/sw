@@ -121,12 +121,12 @@ def timer_status_cmd(ctx):
     try:
         tm = SystemdTimer()
 
-        status = tm.get_status()
-        is_active = status.get("ActiveState") == "active"
-        is_enabled = status.get("SubState") == "enabled"
+        is_active = tm.is_active()
+        is_enabled = tm.is_enabled()
+        next_elapse = None
 
         if is_active:
-            next_elapse = prettify_time(status.get("NextElapse"))
+            next_elapse = prettify_time(tm.next_elapse_mono())
         else:
             next_elapse = "N/A"
 

@@ -21,12 +21,7 @@ def get_wallpaper_info(config):
     return hm.get(-1)
 
 
-def get_timer_info():
-    tm = SystemdTimer()
-    return tm.get_status()
-
-
-def format_fields(wallpaper_info, timer_info, options):
+def format_fields(wallpaper_info, timer, options):
     fields = []
 
     if options.get("name"):
@@ -36,12 +31,12 @@ def format_fields(wallpaper_info, timer_info, options):
     if options.get("directory"):
         fields.append(("Directory", green(str(Path(wallpaper_info.path).parent))))
 
-    if timer_info and not options.get("hide_timer"):
-        next_elapse = timer_info.get("NextElapse")
-        is_active = timer_info.get("ActiveState") == "active"
-        is_enabled = timer_info.get("SubState") == "enabled"
+    if timer and not options.get("hide_timer"):
+        is_active = timer.is_active()
+        is_enabled = timer.is_enabled()
+        next_elapse = timer.next_elapse_mono() if is_active else None
 
-        next_elapse_str = prettify_time(next_elapse) if is_active and next_elapse else yellow("N/A")
+        next_elapse_str = prettify_time(next_elapse) if next_elapse else yellow("N/A")
 
         fields.append(("Active", format_boolean(is_active)))
         fields.append(("Enabled", format_boolean(is_enabled)))
@@ -63,9 +58,7 @@ def status_cmd(ctx, name, directory, hide_path, hide_timer):
         config = Config()
         wallpaper_info = get_wallpaper_info(config)
 
-        timer_info = None
-        if not hide_timer:
-            timer_info = get_timer_info()
+        timer = SystemdTimer() if not hide_timer else None
 
         options = {
             "name": name,
@@ -73,7 +66,8 @@ def status_cmd(ctx, name, directory, hide_path, hide_timer):
             "hide_path": hide_path,
             "hide_timer": hide_timer,
         }
-        fields = format_fields(wallpaper_info, timer_info, options)
+
+        fields = format_fields(wallpaper_info, timer, options)
 
         if not fields:
             log("No wallpaper currently set.", ctx)
