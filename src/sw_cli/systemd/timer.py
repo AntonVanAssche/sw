@@ -49,6 +49,12 @@ class SystemdTimer:
         except dbus.DBusException as e:
             raise SystemdTimerStatusError(f"Could not retrieve status for '{self.unit_name}'.") from e
 
+    def _get_unit_file_state(self) -> str:
+        try:
+            return self.systemd.GetUnitFileState(self.timer_unit)
+        except dbus.DBusException as e:
+            raise SystemdTimerNotFoundError(f"Could not retrieve unit file state for '{self.unit_name}'.") from e
+
     def is_active(self) -> bool:
         try:
             unit_path = self._get_unit_path()
@@ -59,9 +65,7 @@ class SystemdTimer:
 
     def is_enabled(self) -> bool:
         try:
-            unit_path = self._get_unit_path()
-            properties = self._get_unit_properties(unit_path)
-            return properties.Get("org.freedesktop.systemd1.Unit", "SubState") == "enabled"
+            return self._get_unit_file_state() == "enabled"
         except SystemdError as e:
             raise SystemdTimerStatusError(f"Failed to determine if '{self.unit_name}' is enabled.") from e
 
@@ -100,11 +104,9 @@ class SystemdTimer:
 
     def get_status(self) -> dict:
         try:
-            unit_path = self._get_unit_path()
-            properties = self._get_unit_properties(unit_path)
             return {
-                "ActiveState": properties.Get("org.freedesktop.systemd1.Unit", "ActiveState"),
-                "SubState": properties.Get("org.freedesktop.systemd1.Unit", "SubState"),
+                "ActiveState": "active" if self.is_active() else "inactive",
+                "SubState": "enabled" if self.is_enabled() else "disabled",
                 "NextElapse": self._get_time_left(),
             }
         except SystemdError as e:
