@@ -93,26 +93,7 @@ class SystemdTimer:
         except dbus.DBusException as e:
             raise SystemdTimerActionError(f"Failed to stop '{self.unit_name}'.") from e
 
-    def toggle(self) -> None:
-        try:
-            if self.is_active():
-                self.stop()
-            else:
-                self.start()
-        except SystemdError as e:
-            raise SystemdTimerActionError(f"Failed to toggle '{self.unit_name}'.") from e
-
-    def get_status(self) -> dict:
-        try:
-            return {
-                "ActiveState": "active" if self.is_active() else "inactive",
-                "SubState": "enabled" if self.is_enabled() else "disabled",
-                "NextElapse": self._get_time_left(),
-            }
-        except SystemdError as e:
-            raise SystemdTimerStatusError(f"Failed to retrieve status for '{self.unit_name}'.") from e
-
-    def _get_time_left(self) -> float:
+    def next_elapse_mono(self) -> float:
         try:
             timer_path = self.systemd.LoadUnit(self.timer_unit)
             timer_proxy = self.bus.get_object("org.freedesktop.systemd1", timer_path)
