@@ -93,15 +93,6 @@ class SystemdTimer:
         except dbus.DBusException as e:
             raise SystemdTimerActionError(f"Failed to stop '{self.unit_name}'.") from e
 
-    def toggle(self) -> None:
-        try:
-            if self.is_active():
-                self.stop()
-            else:
-                self.start()
-        except SystemdError as e:
-            raise SystemdTimerActionError(f"Failed to toggle '{self.unit_name}'.") from e
-
     def next_elapse_mono(self) -> float:
         try:
             timer_path = self.systemd.LoadUnit(self.timer_unit)
