@@ -7,7 +7,5 @@ updates:
       interval: "weekly"
     assignees:
       - "AntonVanAssche"
-    reviewers:
-      - "AntonVanAssche"
     commit-message:
       prefix: "[pip] "
