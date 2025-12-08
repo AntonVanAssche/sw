@@ -22,17 +22,13 @@ class WallpaperSelector:
         """
         Figure out what wallpaper path to set.
 
-        If use_dir is True, pick from the directory of the current wallpaper.
+        Priority:
+        1. Explicit path provided
+        2. Queued entries
+        3. use_dir=True (directory of current wallpaper)
+        4. Fallback to config wallpaper dir
         """
         try:
-            if use_dir:
-                current_wallpaper = self.history.get(-1).path
-                if current_wallpaper:
-                    current_dir = Path(current_wallpaper).parent
-                    return self._pick_from_directory(current_dir)
-
-                raise WallpaperNotFoundError("No current wallpaper found in history to determine directory.")
-
             if path:
                 target = Path(path)
                 if not target.exists():
@@ -53,7 +49,14 @@ class WallpaperSelector:
                     raise WallpaperError(f"Queued wallpaper is not a valid image: {next_item}")
                 return next_item
 
-            # Finally fallback to config wallpaper dir
+            if use_dir:
+                current_wallpaper = self.history.get(-1).path
+                if current_wallpaper:
+                    current_dir = Path(current_wallpaper).parent
+                    return self._pick_from_directory(current_dir)
+
+                raise WallpaperNotFoundError("No current wallpaper found in history to determine directory.")
+
             return self._pick_from_directory(self.config.wallpaper_dir)
 
         except (WallpaperNotFoundError, WallpaperError):
