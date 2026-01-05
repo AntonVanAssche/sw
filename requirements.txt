@@ -3,7 +3,7 @@ click==8.3.1
 dbus-python==1.4.0
 notify2==0.3.1
 packaging==25.0
-pillow==12.0.0
+pillow==12.1.0
 pyproject_hooks==1.2.0
 python-wayland==1.0.0
 pywayland==0.4.18
