@@ -90,6 +90,7 @@ class SWDaemon:
         self.draw_wallpaper(surface.buffer_ptr, width, height)
 
         surface.attach(surface.buffer, 0, 0)
+        surface.damage(0, 0, width, height)
         surface.commit()
 
     def run(self):
