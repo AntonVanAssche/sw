@@ -8,4 +8,4 @@ pyproject_hooks==1.2.0
 python-wayland==1.0.0
 pywayland==0.4.18
 setuptools==80.9.0
-wheel==0.45.1
+wheel==0.46.3
